@@ -1,12 +1,11 @@
 interface Character {
     name: string;
     attack: number;
-    $defense: number;
+    defense: number;
     health: number;
     maxHealth: number;
     take_damage(damage: number): boolean;
     heal(amount: number): void;
-    defense(): void;
 }
 
 interface Character_Hero extends Character {

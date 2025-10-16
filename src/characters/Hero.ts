@@ -9,7 +9,7 @@ class Hero implements Character_Hero {
   health: number;
   maxHealth: number;
   attack: number;
-  $defense: number;
+  defense: number;
   inventory: string[];
   level: number;
 
@@ -19,7 +19,7 @@ class Hero implements Character_Hero {
     this.health = 100;
     this.maxHealth = 100;
     this.attack = 15;
-    this.$defense = 5;
+    this.defense = 5;
     this.inventory = [];
   }
 
@@ -32,7 +32,6 @@ class Hero implements Character_Hero {
     this.health = Math.min(this.maxHealth, this.health + amount);
   }
 
-  defense() {}
 }
 
 export { Hero };

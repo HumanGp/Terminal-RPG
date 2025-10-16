@@ -8,7 +8,7 @@ class Enemy implements Character_Enemy {
   name: string;
   health: number;
   attack: number;
-  $defense: number;
+  defense: number;
   maxHealth: number;
 
   constructor(name: string) {
@@ -16,7 +16,7 @@ class Enemy implements Character_Enemy {
     this.health = 100;
     this.maxHealth = 100;
     this.attack = 15;
-    this.$defense = 5;
+    this.defense = 5;
   }
 
   take_damage(damage: number) {
@@ -28,7 +28,6 @@ class Enemy implements Character_Enemy {
     this.health = Math.min(this.maxHealth, this.health + amount);
   }
 
-  defense() {}
 }
 
 export { Enemy };

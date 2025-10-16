@@ -1,14 +1,14 @@
 /**
  * GAME 
  */
-import { Hero } from "./characters/Hero.js";
-import { Enemy } from './characters/Enemy.js';
-import { UI } from './display/UI.js';
-import { BattleSystem } from './combat/BattleSystem.js';
+import { Hero } from "./characters/Hero";
+import { Enemy } from './characters/Enemy';
+import { UI } from './display/UI';
+import { BattleSystem } from './combat/BattleSystem';
 import * as readline from 'readline' ;
-import type { Character_Enemy, Character_Hero } from "./types/characters_types.js";
-import type { Battle_System } from "./types/combat_types.js";
-import type { Game_, Input } from "./types/game_types.js";
+import type { Character_Enemy, Character_Hero } from "./types/characters_types";
+import type { Battle_System } from "./types/combat_types";
+import type { Game_, Input } from "./types/game_types";
 
 
 
@@ -16,7 +16,7 @@ class Game implements Game_{
     hero: Character_Hero;
     enemy: Character_Enemy;
     battle: Battle_System;
-    rl: {};
+    rl:readline.Interface;
 
     constructor() {
         this.hero = new Hero("Brave Adventurer");

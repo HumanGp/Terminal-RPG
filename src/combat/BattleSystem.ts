@@ -20,7 +20,7 @@ class BattleSystem implements Battle_System{
     }
     
     player_attack() {
-        const damage = this.hero.attack - this.enemy.$defense;
+        const damage = this.hero.attack - this.enemy.defense;
         this.enemy.take_damage(damage);
         this.log(`${this.hero.name} attacks for ${damage} damage!`)
 
@@ -34,7 +34,7 @@ class BattleSystem implements Battle_System{
     }
 
     enemy_attack() {
-        const damage = this.enemy.attack - this.hero.$defense;
+        const damage = this.enemy.attack - this.hero.defense;
         this.hero.take_damage(damage);
         this.log(`${this.enemy.name} attack for ${damage} damage!`)
 
