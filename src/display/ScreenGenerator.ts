@@ -8,7 +8,7 @@ class ScreenGenerator {
     phase: GamePhase,
     hero: Character_Hero | null,
     enemy: Character_Enemy | null,
-    area: keyof ARTS  = " "
+    area: keyof ARTS  = "CORRUPTED_FOREST"
   ): ScreenData {
     switch (phase) {
       case "BOOT":
@@ -205,8 +205,8 @@ class ScreenGenerator {
       
     if (hero.health < 30) status.push("💔 Hero is badly wounded!");
     if (enemy.health < 30) status.push("🎯 Enemy is weak!");
-    if (hero.statusEffects?.length > 0)
-      status.push(`⚡ ${hero.statusEffects.join(", ")}`);
+    // if (hero.statusEffects?.length > 0)
+      // status.push(`⚡ ${hero.statusEffects.join(", ")}`);
 
     return status.join("\n") || "Combat is intense!";
   }
@@ -222,7 +222,7 @@ class ScreenGenerator {
         content: [
             `Gold: ${hero.gold || 0}`,
             `ITEMS: ${items}`,
-            `EQUIPMENT: Weapon: ${hero.weapon || "Basic Sword"} Armor: ${hero.armor || "Leather Armor"}`
+            // `EQUIPMENT: Weapon: ${hero.weapon || "Basic Sword"} Armor: ${hero.armor || "Leather Armor"}`
         ],
         actions: ["[1-9] Use Item", "[E] Equip", "[B] Back"],
         asciiArt: `

@@ -60,11 +60,7 @@ class Game_UI {
       },
     });
 
-    this.setup_layout();
-  }
-
-  private setup_layout() {
-    //health bar
+    //health_bar
     this.healthBar = blessed.box({
       top: 0,
       left: 0,
@@ -119,7 +115,6 @@ class Game_UI {
       inputOnFocus: true,
     });
 
-    // Add all to screen
     this.screen.append(this.healthBar);
     this.screen.append(this.gameArea);
     this.screen.append(this.logArea);
@@ -130,7 +125,7 @@ class Game_UI {
     const bars = Math.floor(health / 10);
 
     return (
-      "{green-fg}" +
+      "{/green-fg}" +
       `${Game_UI.ASCII.progress_characters["intensity_1"]}`.repeat(bars) +
       "{/green-fg}" +
       "{red-fg}" +
@@ -158,23 +153,64 @@ Enemy: ${this.get_health_bar(enemy.health)} ${enemy.health}%
     this.screen.render();
   }
 
- 
-
   async add_log(message: string, speed: number = 30) {
     await Typewriter.type(message, speed);
   }
 
-  //Get input from fiexd bottom area
-  async getInput(prompt: string = "> "): Promise<string> {
+
+  //Clear the input area and set new prompt
+  setInputPrompt(prompt: string = `> `) {
     this.inputArea.setValue(prompt);
     this.inputArea.focus();
+    this.screen.render();
+  }
 
+  // Get input with proper scoping
+  async getInput(prompt: string = `> `): Promise<string> {
+    this.setInputPrompt(prompt);
+    
     return new Promise((resolve) => {
-      this.inputArea.on("submit", (value: string) => {
+      const submitHandler = (value: string) => {
+        this.inputArea.removeListener('submit', submitHandler);
         this.inputArea.setValue("");
-        resolve(value.slice(prompt.length).trim());
-      });
+        resolve(value.slice(prompt.length).trim().toUpperCase());
+      };
+      
+      this.inputArea.on('submit', submitHandler);
     });
+  }
+
+  // Wait for any key (like ENTER in boot phase)
+  async waitForAnyKey(): Promise<void> {
+    return new Promise((resolve) => {
+      const handler = () => {
+        this.screen.removeListener('keypress', handler);
+        resolve();
+      };
+      this.screen.on('keypress', handler);
+    });
+  }
+
+  // Update multiple UI components at once
+  updateScreen(title: string, content: string, actions: string[]) {
+    this.update_game_area(this.formatScreenContent(title, content));
+    this.update_actions(actions);
+  }
+
+  private formatScreenContent(title: string, content: string): string {
+    return `{bold}${title}{/bold}\n\n${content}`;
+  }
+
+  update_actions(actions: string[]) {
+    // You might want to display actions in a specific area
+    // For now, we'll include them in the log or a separate area
+    const actionsText = `Actions: ${actions.join(' | ')}`;
+    this.logArea.add(actionsText);
+    this.screen.render();
+  }
+
+  wait_for_continue() {
+    
   }
 }
 

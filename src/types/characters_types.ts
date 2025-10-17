@@ -12,6 +12,8 @@ interface Character_Hero extends Character {
     level: number;
     inventory: string[];
     gold: number;
+    enemiesDefeated: number;
+    class: 'Mage' | 'Rogue' | 'Warrior'
 }
 
 interface Character_Enemy extends Character {

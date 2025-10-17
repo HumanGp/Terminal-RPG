@@ -13,6 +13,8 @@ class Hero implements Character_Hero {
   inventory: string[];
   level: number;
   gold: number;
+  enemiesDefeated: number;
+  class: "Mage" | "Rogue" | "Warrior";
 
   constructor(name: string) {
     this.name = name;
@@ -22,7 +24,9 @@ class Hero implements Character_Hero {
     this.attack = 15;
     this.defense = 5;
     this.inventory = [];
+    this.enemiesDefeated = 0;
     this.gold = 0;
+    this.class = 'Warrior'
   }
 
   take_damage(damage: number) {

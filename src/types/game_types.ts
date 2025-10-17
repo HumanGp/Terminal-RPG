@@ -16,4 +16,15 @@ type Game_State = 'EXPLORING' | 'IN_COMBAT' | 'IN_MENU' | 'GAME_OVER'
 
 type Input = "a" | "h" | "r" | string;
 
-export type {Game_, Input , Game_State}
+type Phase_Actions = [];
+
+type Character_Creation_Phase_Actions = 'w' | 'm' | 'r';
+type World_Map_Phase_Actions = 1 | 2 | 3 | 4
+
+export type {
+  Game_,
+  Input,
+  Game_State,
+  Character_Creation_Phase_Actions,
+  World_Map_Phase_Actions,
+}
