@@ -3,11 +3,19 @@
   "version": "1.0.0",
   "description": "This is a terminal based RPG Game",
   "main": "index.js",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "HumanGpt",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@types/blessed": "^0.1.25",
+    "@types/node": "^24.7.2"
+  },
+  "dependencies": {
+    "blessed": "^0.1.81",
+    "blessed-contrib": "^1.0.11"
+  }
 }

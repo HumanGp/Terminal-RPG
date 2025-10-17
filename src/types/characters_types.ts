@@ -4,13 +4,14 @@ interface Character {
     defense: number;
     health: number;
     maxHealth: number;
-    take_damage(damage: number): boolean;
+    take_damage(damage: number): void;
     heal(amount: number): void;
 }
 
 interface Character_Hero extends Character {
     level: number;
     inventory: string[];
+    gold: number;
 }
 
 interface Character_Enemy extends Character {

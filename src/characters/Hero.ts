@@ -12,6 +12,7 @@ class Hero implements Character_Hero {
   defense: number;
   inventory: string[];
   level: number;
+  gold: number;
 
   constructor(name: string) {
     this.name = name;
@@ -21,11 +22,12 @@ class Hero implements Character_Hero {
     this.attack = 15;
     this.defense = 5;
     this.inventory = [];
+    this.gold = 0;
   }
 
   take_damage(damage: number) {
     this.health -= damage;
-    return this.health > 0;
+    // return this.health > 0;
   }
 
   heal(amount: number) {

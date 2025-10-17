@@ -2,17 +2,18 @@
  * UI TERMINAL
  */
 
+// import { title } from "process";
 import { Enemy } from "../characters/Enemy";
 import { Hero } from "../characters/Hero";
-import type {
-  Character_Enemy,
-  Character_Hero,
-} from "../types/characters_types";
+var blessed = require('blessed')
+var contrib = require('blessed-contrib')
+
+import type { Character_Enemy, Character_Hero } from "../types/characters_types";
 import type { Battle_Log } from "../types/combat_types";
 import type { ASCII_Characters, UI_ } from "../types/UI_types";
 
-// ASCII CHARACTERS
 
+// ASCII CHARACTERS
 const ASCII: ASCII_Characters = {
   box_drawing_characters: {
     tl: "╔",
@@ -33,6 +34,21 @@ const ASCII: ASCII_Characters = {
     intensity_4: "░",
   },
 };
+
+const screen = blessed.screen({
+  smartCSR: true,
+  title: 'Terminal RPG'
+});
+
+const healthBar = blessed.box({
+  top: 0,
+  left: 0,
+  width: "100%",
+  height: 3,
+  content: "Health: ██████████ 100% ",
+});
+
+const game
 
 class UI implements UI_ {
   static display_battle( hero: Character_Hero, enemy: Character_Enemy, battle_log: Battle_Log ) {
@@ -135,6 +151,7 @@ class UI implements UI_ {
   static display_menu() {
     console.log(`[A]ttack [H]ealth [R]un\n Choose an action`);
   }
+
 }
 
 export { UI };

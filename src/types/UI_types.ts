@@ -23,4 +23,34 @@ interface UI_ {
     
 }
 
-export type { UI_ , ASCII_Characters };
+type GamePhase =
+  | "BOOT"
+  | "CHARACTER_CREATION"
+  | "WORLD_MAP"
+  | "COMBAT"
+  | "INVENTORY"
+  | "SHOP"
+  | "GAME_OVER";
+
+interface ScreenData {
+  title: string;
+  content: string[];
+  actions: string[];
+  asciiArt: string;
+}
+
+type ARTS = {
+  CORRUPTED_FOREST: string;
+  BUG_INFESTED_CAVES: string;
+  GLITCH_CANYON: string;
+  KERNEL_CITADEL: string;
+};
+
+
+export type {
+  UI_,
+  ASCII_Characters,
+  GamePhase,
+  ScreenData,
+  ARTS
+};
