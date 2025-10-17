@@ -48,6 +48,7 @@ class GAME {
 
     // update UI with generated screen
     // this.ui.update_game_area(screenData.title, screenData.content);
+    this.ui.update_phase_title(screenData.title);
     this.ui.update_game_area(screenData.content.join("\n"));
     this.ui.update_actions(screenData.actions);
 
@@ -197,7 +198,7 @@ class GAME {
     await this.ui.waitForAnyKey();
   }
 
-  // Add missing delay method
+  
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -211,10 +212,10 @@ class GAME {
         hero = new Warrior("Warrior");
         break;
       case 'M':
-        hero = new Mage("Mage"); // Fixed: was using Rogue for M
+        hero = new Mage("Mage"); 
         break;
       case 'R':
-        hero = new Rouge("Rogue"); // Fixed: was using Mage for R
+        hero = new Rouge("Rogue"); 
         break;
       default:
         hero = new Warrior("Warrior"); // fallback

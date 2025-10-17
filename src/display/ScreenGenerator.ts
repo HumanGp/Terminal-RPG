@@ -52,24 +52,25 @@ class ScreenGenerator {
       title: "CHARACTER CREATION",
       content: [
         "Choose your path brave adventurer:",
+        "··········································",
         " ",
 
         "[W] WARRIOR - Strong and resilient",
-        "• High Health & Defense",
-        "• Rage-based abilities",
-        "• Perfect for beginners",
+        " • High Health & Defense",
+        " • Rage-based abilities",
+        " • Perfect for beginners",
         " ",
 
         "[M] MAGE - Maste or arcane arts",
-        "• Powerful spells",
-        "• Mana management",
-        "• Strategic gameplay",
+        " • Powerful spells",
+        " • Mana management",
+        " • Strategic gameplay",
         " ",
 
         "[R] ROUGE - Swift and deadly",
-        "• High critical chance",
-        "• Energy-based skills",
-        "• High risk, high reward",
+        " • High critical chance",
+        " • Energy-based skills",
+        " • High risk, high reward",
       ],
       actions: ["[W] Warrior", "[M] Mage", "[R] Rogue"],
       asciiArt: `character generation art`,
@@ -82,6 +83,7 @@ class ScreenGenerator {
       title: "WORLD MAP",
       content: [
         "Travel to your next destination:",
+        "··········································",
         " ",
 
         "[1] CORRUPTED FOREST",
