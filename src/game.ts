@@ -11,6 +11,7 @@ import { Character_Creation_Phase_Actions, World_Map_Phase_Actions } from "./typ
 import { ARTS, GamePhase } from "./types/UI_types";
 
 type CHARACTER_CHOICE = 'W' | 'M' | 'R';
+type COMBAT_CHOICE = '1' | '2' | '3' | '4' | 'I' | 'S';
 
 class GAME {
   private hero: Character_Hero | null = null;
@@ -27,7 +28,7 @@ class GAME {
     try {
       await this.run_game_loop();
     } catch (error) {
-      console.error("Game error:", error);
+      console.error("Game error:", error instanceof Error ? error.message : "Unkown error occured");
     }
   }
 
@@ -39,6 +40,7 @@ class GAME {
   }
 
   private async render_current_screen() {
+
     const screenData = ScreenGenerator.generateScreen(
       this.currentPhase,
       this.hero,
@@ -47,7 +49,6 @@ class GAME {
     );
 
     // update UI with generated screen
-    // this.ui.update_game_area(screenData.title, screenData.content);
     this.ui.update_phase_title(screenData.title);
     this.ui.update_game_area(screenData.content.join("\n"));
     this.ui.update_actions(screenData.actions);
@@ -59,8 +60,7 @@ class GAME {
   private async handle_phase_input() {
     switch (this.currentPhase) {
       case "BOOT":
-        // await this.ui.wait_for_continue();
-        await this.handle_boot();
+        await this.ui.waitForAnyKey();
         this.currentPhase = "CHARACTER_CREATION";
         break;
       case "CHARACTER_CREATION":
@@ -79,7 +79,9 @@ class GAME {
   }
 
 
-  private handle_combat_input() {}
+  private async handle_combat_input(): Promise<void> {
+    
+  }
 
   private handle_inventory_input() {}
 
@@ -104,7 +106,7 @@ class GAME {
     let input: CHARACTER_CHOICE;
 
     while (!validInput) {
-      const userInput = await this.ui.getInput("Choose your class [W/M/R]: ");
+      const userInput = await this.ui.getInput("Choose your character [W/M/R]: ");
 
       if (userInput === "W" || userInput === "M" || userInput === "R") {
         input = userInput;
@@ -187,15 +189,15 @@ class GAME {
     );
 
     this.ui.updateScreen(screenData.title, screenData.content.join('\n'), screenData.actions);
-    await this.ui.add_log(screenData.asciiArt, 0);
+    await this.ui.screen_log(screenData.asciiArt, 0);
     
     // Render content with typewriter effect
-    for (const line of screenData.content) {
-      await this.ui.add_log(line, 50);
-    }
+    await this.ui.screen_log(screenData.content.join('\n'), 100);
+    
     
     await this.ui.add_log('\nPress any key to continue...', 30);
     await this.ui.waitForAnyKey();
+
   }
 
   
@@ -230,11 +232,8 @@ class GAME {
       enemiesDefeated: hero.enemiesDefeated || 0
     } as Character_Hero;
   }
-
-
 }
 
 const game = new GAME;
-
 game.start();
 
