@@ -32,7 +32,7 @@ class Game_UI {
   private gameArea: Widgets.BoxElement;
   private logArea: Widgets.Log;
   private phaseTitle: Widgets.Log;
-  private inputArea: Widgets.TextboxElement; //blessed.Widgets.TextboxElement;
+  private inputArea: Widgets.TextboxElement; 
   private actionBar: Widgets.BoxElement;
   static ASCII: ASCII_Characters = {
     box_drawing_characters: {
@@ -243,7 +243,16 @@ Enemy: ${this.get_health_bar(enemy.health)} ${enemy.health}%
     this.logArea.add(""); // Finalize with newline
   }
 
-  async screen_log(message: string, speed: number = 30) {}
+  async screen_log(message: string, speed: number = 30) {
+    let currentText = "";
+    for (const char of message) {
+      currentText += char;
+      this.gameArea.setContent(currentText);
+      this.screen.render();
+      await this.delay(speed);
+    }
+  
+  }
 
   //Clear the input area and set new prompt
   setInputPrompt(prompt: string = `> `) {
