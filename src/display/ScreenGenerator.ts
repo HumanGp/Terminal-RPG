@@ -80,7 +80,7 @@ class ScreenGenerator {
   // WORLD MAP SCREEN
   private static generate_world_map_screen(hero: Character_Hero): ScreenData {
     return {
-      title: "WORLD MAP",
+      title: `WORLD MAP`,
       content: [
         "Travel to your next destination:",
         "··········································",
@@ -123,27 +123,26 @@ class ScreenGenerator {
     enemy: Character_Enemy,
     area: keyof ARTS
   ): ScreenData {
-    const healthBar = (character: Character_Hero | Character_Enemy) => {
-      const bars = Math.floor(character.health / 10);
-      const progress_characters = Game_UI.ASCII.progress_characters;
-
-      return (
-        progress_characters["intensity_1"].repeat(bars) +
-        progress_characters["intensity_4"].repeat(10 - bars)
-      );
-    };
+    const ASCII = Game_UI.ASCII;
+    const character_health_ascii = (
+      character: Character_Hero | Character_Enemy
+    ) =>
+      ` ${character.name}: {#daa520-fg}${ASCII.progress_characters[
+        "intensity_1"
+      ].repeat(
+        Math.max(0, Math.floor(character.health / 10))
+      )}${ASCII.progress_characters["intensity_4"].repeat(
+        Math.max(0, 10 - Math.floor(character.health / 10))
+      )} ${character.health}%{/#daa520-fg}`;
 
     return {
       title: `COMBAT - ${area.toUpperCase()}`,
       content: [
-        `${this.get_combat_ascii(area)}`,
-        `${hero.name}`,
-        `${healthBar(hero)} ${hero.health}%`,
+        `${character_health_ascii(hero)}`,
         " ",
         "VS",
         " ",
-        `${enemy.name}`,
-        `${healthBar(enemy)} ${enemy.health}%`,
+        `${character_health_ascii(enemy)}`,
         " ",
         `${this.get_combat_status(hero, enemy)}`,
       ],
