@@ -8,15 +8,8 @@ import { Hero } from "./characters/Hero";
 import { Game_UI } from "./display/GameUI";
 import { ScreenGenerator } from "./display/ScreenGenerator";
 import { Character_Enemy, Character_Hero } from "./types/characters_types";
-import { Character_Creation_Phase_Actions, World_Map_Phase_Actions } from "./types/game_types";
+import { CHARACTER_CHOICE, COMBAT_ACTION, WORLD_INPUT } from "./types/game_types";
 import { ARTS, GamePhase } from "./types/UI_types";
-
-type CHARACTER_CHOICE = 'W' | 'M' | 'R';
-type COMBAT_CHOICE = '1' | '2' | '3' | '4' | 'I' | 'S';
-type HERO_ACTIONS = 'A' | 'H' | 'D' | 'R';
-type MAGE_ACTIONS = HERO_ACTIONS & 'F' | 'I';
-type WARRIOR_ACTIONS = HERO_ACTIONS & 'S' | 'W';
-type ROUGE_ACTIONS = HERO_ACTIONS & 'B' | 'P'
 
 class GAME {
   private hero: Character_Hero | null = null;
@@ -267,9 +260,9 @@ class GAME {
      * Currently  handling input 1 though not the desired logic
      */
     while (!validInput) {
-      const input = await this.ui.getInput("Choose action: ");
+      const input = await this.ui.getInput("Choose action: ") as WORLD_INPUT;
 
-      switch (input) {
+      switch (input) {   
         case "1":
           if (this.hero!.level >= 1) {
             await this.delay(1000);
@@ -309,21 +302,6 @@ class GAME {
             await this.ui.add_log("Area locked! Reach level 10 to enter.", 30);
           }
           break;
-        case "I":
-          this.currentPhase = "INVENTORY";
-          validInput = true;
-          break;
-
-        case "S":
-          this.currentPhase = "SHOP";
-          validInput = true;
-          break;
-
-        case "Q":
-          this.currentPhase = "GAME_OVER";
-          validInput = true;
-          break;
-
         default:
           await this.ui.add_log(
             "Invalid action! Use 1-4 to travel, I for inventory, S for shop, Q to quit.",
@@ -337,7 +315,7 @@ class GAME {
     let validInput = false;
 
     while (!validInput) {
-      const input = await this.ui.getInput('Make a move: ');
+      const input = await this.ui.getInput('Make a move: ') as COMBAT_ACTION;
 
       /**
        * Currently supporting [R] run command to test all phases
