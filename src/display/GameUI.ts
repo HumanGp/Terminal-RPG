@@ -78,6 +78,7 @@ class Game_UI {
         border: { fg: "cyan" },
         fg: "white",
       },
+      label: 'life'
     });
 
     // Game Area (Dynamic content)
@@ -103,6 +104,7 @@ class Game_UI {
         style: { bg: "#d4af37" },
       },
       padding: { left: 2, right: 2, top: 1, bottom: 1 },
+      label: 'Screen'
     });
 
     //Log Area (scrolls, doesn't grow)
@@ -124,6 +126,7 @@ class Game_UI {
         ch: "░",
         style: { fg: "#d4af37" },
       },
+      label: 'Logs'
     });
 
     // INPUT AREA - Always at very bottom
@@ -142,6 +145,7 @@ class Game_UI {
       },
       inputOnFocus: true,
       padding: { left: 1 },
+      label: 'Input'
     });
 
     this.phaseTitle = blessed.box({
@@ -157,6 +161,7 @@ class Game_UI {
         bold: true,
       },
       align: "center",
+      label: 'Phase'
     });
 
     this.actionBar = blessed.box({
@@ -174,6 +179,7 @@ class Game_UI {
         fg: "#d4af37",
       },
       padding: { left: 2 },
+      label: 'Commands'
     });
 
     this.screen.append(this.phaseTitle);
@@ -181,6 +187,11 @@ class Game_UI {
     this.screen.append(this.actionBar);
     this.screen.append(this.logArea);
     this.screen.append(this.inputArea);
+
+    // listen for exit key
+    this.screen.key(['escape', 'q' , 'C-c'], function(){
+      return process.exit(0)
+    })
   }
 
   //Update Phase Title
