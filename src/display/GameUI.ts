@@ -64,6 +64,7 @@ class Game_UI {
         shape: "line",
         blink: true,
       },
+    
     });
 
     //health_bar
@@ -161,7 +162,6 @@ class Game_UI {
         bold: true,
       },
       align: "center",
-      label: 'Phase'
     });
 
     this.actionBar = blessed.box({
@@ -314,7 +314,24 @@ Enemy: ${this.get_health_bar(enemy.health)} ${enemy.health}%
   }
 
   private formatScreenContent(title: string, content: string): string {
-    return `{bold}${title}{/bold}\n\n${content}`;
+     const Ascii_Title = `
+{#daa520-fg}${
+       Game_UI.ASCII.box_drawing_characters["tl"]
+     }${Game_UI.ASCII.box_drawing_characters["edge_x"].repeat(
+       title.length + 2
+     )}${Game_UI.ASCII.box_drawing_characters["tr"]}{/#daa520-fg}
+{#daa520-fg}${
+       Game_UI.ASCII.box_drawing_characters["edge_y"]
+     } {bold}${title}{/bold} ${
+       Game_UI.ASCII.box_drawing_characters["edge_y"]
+     }{/#daa520-fg}
+{#daa520-fg}${
+       Game_UI.ASCII.box_drawing_characters["bl"]
+     }${Game_UI.ASCII.box_drawing_characters["edge_x"].repeat(
+       title.length + 2
+     )}${Game_UI.ASCII.box_drawing_characters["br"]}{/#daa520-fg}
+    `;
+    return `${Ascii_Title}\n\n${content}`;
   }
 
   // UPDATE ACTIONS (bottom left)
