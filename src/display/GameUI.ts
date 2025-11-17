@@ -1,198 +1,479 @@
-import { BlessedProgram, Widgets } from "blessed";
-import { Character_Enemy, Character_Hero } from "../types/characters_types";
-import { ASCII_Characters } from "../types/UI_types";
+/**
+'##::::'##:'##::::'##:'##::::'##::::'###::::'##::: ##::'######:::'########::'########:
+ ##:::: ##: ##:::: ##: ###::'###:::'## ##::: ###:: ##:'##... ##:: ##.... ##:... ##..::
+ ##:::: ##: ##:::: ##: ####'####::'##:. ##:: ####: ##: ##:::..::: ##:::: ##:::: ##::::
+ #########: ##:::: ##: ## ### ##:'##:::. ##: ## ## ##: ##::'####: ########::::: ##::::
+ ##.... ##: ##:::: ##: ##. #: ##: #########: ##. ####: ##::: ##:: ##.....:::::: ##::::
+ ##:::: ##: ##:::: ##: ##:.:: ##: ##.... ##: ##:. ###: ##::: ##:: ##::::::::::: ##::::
+ ##:::: ##:. #######:: ##:::: ##: ##:::: ##: ##::. ##:. ######::: ##::::::::::: ##::::
+..:::::..:::.......:::..:::::..::..:::::..::..::::..:::......::::..::::::::::::..:::::
+ */
 
-var blessed = require('blessed');
-var contrib = require('blessed-contrib')
+import { Widgets } from "blessed";
+import type { Character_Enemy, Character_Hero } from "../types/characters_types";
+import type { ASCII_Characters } from "../types/UI_types";
+import {
+  actionBar,
+  ASCII,
+  combatLog,
+  enemyHealthGauge,
+  enemyPanel,
+  gameArea,
+  healthGauge,
+  heroPanel,
+  inputArea,
+  lcd,
+  logArea,
+  phaseTitle,
+  screen,
+  textArea,
+  layoutConfigs
+} from "../components/UI/ui";
 
-class Typewriter {
-  static async type(text: string, speed: number = 50, screen?: boolean) {   
-    if (screen) {
-      
-    } else {
-      //conditional blocks on where the effect should take place log_area
-      for (let i = 0; i < text.length; i++) {
-        process.stdout.write(text[i] as string);
-        await this.delay(speed);
-      }
-      process.stdout.write('\n');
-    }
-  }
-
-    private static delay(ms: number) {
-        return new Promise(resolve => setTimeout(resolve, ms))
-    }
-    
-  
-}
+var blessed = require("blessed");
+var contrib = require("blessed-contrib");
 
 class Game_UI {
-  private screen: Widgets.Screen;
-  private healthBar: Widgets.BoxElement;
-  private gameArea: Widgets.BoxElement;
-  private logArea: Widgets.Log;
-  private phaseTitle: Widgets.Log;
-  private inputArea: Widgets.TextboxElement; 
-  private actionBar: Widgets.BoxElement;
-  static ASCII: ASCII_Characters = {
-    box_drawing_characters: {
-      tl: "╔",
-      tr: "╗",
-      br: "╝",
-      bl: "╚",
-      joint_center: "╬",
-      joint_l: "╠",
-      joint_r: "╣",
-      edge_y: "║",
-      edge_x: "═",
-    },
-
-    progress_characters: {
-      intensity_1: "█",
-      intensity_2: "▓",
-      intensity_3: "▒",
-      intensity_4: "░",
-    },
-  };
+  private screen!: Widgets.Screen;
+  private gameArea!: Widgets.BoxElement;
+  private textArea!: Widgets.BoxElement;
+  private logArea!: Widgets.Log;
+  private phaseTitle!: Widgets.Log;
+  private inputArea!: Widgets.TextboxElement;
+  private actionBar!: Widgets.BoxElement;
+  private layoutConfigs!: typeof layoutConfigs;
+  private currentLayout!: keyof typeof layoutConfigs;
+  private lcd: any;
+  private heroPanel!: Widgets.BoxElement;
+  private enemyPanel!: Widgets.BoxElement;
+  private combatLog!: Widgets.Log;
+  private healthGauge: any = null;
+  private enemyHealthGauge: any = null;
+  static ASCII: ASCII_Characters = ASCII;
 
   constructor() {
-    this.screen = blessed.screen({
-      smartCSR: true,
-      title: "Terminal RPG",
-      cursor: {
-        artificial: true,
-        shape: "line",
-        blink: true,
-      },
-    
-    });
+    this.initialize_standard_widgets();
+    this.initialize_screen_events();
+    this.initialize_gameArea_events();
 
-    //health_bar
-    this.healthBar = blessed.box({
-      top: 0,
-      left: 0,
-      width: "20%",
-      height: 3,
-      content: `${this.get_health_bar(100)}`,
-      border: { type: "line" },
-      style: {
-        border: { fg: "cyan" },
-        fg: "white",
-      },
-      label: 'life'
-    });
+    // this.initialize_combat_widgets();
+    // this.initialize_lcd();
+    // this.grid.applyLayout(screen);
+  }
 
-    // Game Area (Dynamic content)
-    this.gameArea = blessed.box({
-      top: 1, //Below title
-      left: 0,
-      width: "100%",
-      height: "70%",
-      content: "Welcome to your adventure...",
-      tags: true,
-      styles: {
-        fg: "#e8d8b5",
-        bg: "#2a1f1d",
-      },
-      border: {
-        type: "line",
-        fg: "#8b4513",
-      },
-      scrollable: true,
-      alwaysScroll: true,
-      scrollbar: {
-        ch: " ",
-        style: { bg: "#d4af37" },
-      },
-      padding: { left: 2, right: 2, top: 1, bottom: 1 },
-      label: 'Screen'
-    });
+  /*=======================================================*
+   |             INITIALIZE WIDGETS IN THE GRID            |
+   *=======================================================*/
 
-    //Log Area (scrolls, doesn't grow)
-    this.logArea = blessed.log({
-      top: "70%+4", // Below action bar
-      left: 0,
-      width: "100%",
-      height: "20%", // Reasonable height for messages
-      style: {
-        fg: "#a08c76",
-        bg: "#2a1f1d",
-      },
-      border: {
-        type: "line",
-        fg: "#8b4513",
-      },
-      scrollback: 100,
-      scrollbar: {
-        ch: "░",
-        style: { fg: "#d4af37" },
-      },
-      label: 'Logs'
-    });
+  // ****************** ~ GAME INTERFACE ~ *****************
 
-    // INPUT AREA - Always at very bottom
-    this.inputArea = blessed.textbox({
-      bottom: 0,
-      left: 0,
-      width: "100%",
-      height: 3,
-      style: {
-        fg: "#e8d8b5",
-        bg: "#3a2a25",
-      },
-      border: {
-        type: "line",
-        fg: "#d4af37", // Gold border
-      },
-      inputOnFocus: true,
-      padding: { left: 1 },
-      label: 'Input'
-    });
+  private initialize_lcd(): void {
+    this.lcd = contrib.lcd(lcd);
+    this.screen.append(this.lcd);
+  }
 
-    this.phaseTitle = blessed.box({
-      top: 0,
-      left: "center",
-      width: "100%",
-      height: 1,
-      content: "{bold}TERMINAL RPG{/bold}",
-      tags: true,
-      style: {
-        fg: "#d4af37",
-        bg: "#2a1f1d",
-        bold: true,
-      },
-      align: "center",
-    });
+  private initialize_screen_events(): void {
+    //quit screen
+    this.screen.key(
+      ["escape", "q", "C-c"],
+      function (ch: unknown, key: unknown) {
+        return process.exit(0);
+      }
+    );
+  }
 
-    this.actionBar = blessed.box({
-      top: "70%+1",
-      left: 0,
-      width: "100%",
-      height: 3,
-      content: "Actions will appear here...",
-      style: {
-        fg: "#daa520",
-        bg: "#2a1f1d",
-      },
-      border: {
-        type: "line",
-        fg: "#d4af37",
-      },
-      padding: { left: 2 },
-      label: 'Commands'
+  private initialize_gameArea_events(): void {
+    this.gameArea.on("click", (mouse) => {
+      this.textArea.setContent(`You clicked ${mouse.x} , ${mouse.y}`);
+      this.screen.render();
     });
+  }
+
+  private initialize_standard_widgets(): void {
+    this.screen = blessed.screen(screen);
+    this.lcd = contrib.lcd(lcd);
+    this.phaseTitle = blessed.box(phaseTitle);
+    this.gameArea = blessed.box(gameArea);
+    this.textArea = blessed.box(textArea);
+    this.actionBar = blessed.box(actionBar);
+    this.logArea = blessed.log(logArea);
+    this.inputArea = blessed.textbox(inputArea);
 
     this.screen.append(this.phaseTitle);
     this.screen.append(this.gameArea);
     this.screen.append(this.actionBar);
     this.screen.append(this.logArea);
     this.screen.append(this.inputArea);
-
-    // listen for exit key
-    this.screen.key(['escape', 'q' , 'C-c'], function(){
-      return process.exit(0)
-    })
+    this.gameArea.append(this.lcd);
+    this.gameArea.append(this.textArea);
   }
+
+  // ******************** ~ COMBAT SCREEN ~ *****************
+
+  private initialize_combat_widgets() {
+    this.heroPanel = blessed.box(heroPanel);
+    this.enemyPanel = blessed.box(enemyPanel);
+    this.healthGauge = contrib.gauge(healthGauge);
+    this.enemyHealthGauge = contrib.gauge(enemyHealthGauge);
+    this.combatLog = blessed.log(combatLog);
+
+    this.gameArea.append(this.heroPanel);
+    this.gameArea.append(this.enemyPanel);
+    this.gameArea.append(this.healthGauge);
+    this.gameArea.append(this.enemyHealthGauge);
+    this.gameArea.append(this.combatLog);
+  }
+
+  /*============================================================*
+   |                      CONTROL METHODS                       | 
+   *============================================================*/
+
+  // ************************* ~ LCD ~ **************************
+
+  set_lcd_display(text: string, color: string = "red"): void {
+    this.lcd.setDisplay(text);
+    this.lcd.options.color = color;
+    this.screen.render();
+  }
+
+  set_lcd_label(label: string): void {
+    this.lcd.setLabel(` ${label} `);
+    this.screen.render();
+  }
+
+  clear_lcd(): void {
+    this.lcd.setDisplay(" ".repeat(16));
+    this.screen.render();
+  }
+
+  unmount_lcd(): void {
+    // remove lcd
+  }
+
+  async type_lcd_message(message: string, speed: number = 100): Promise<void> {
+    this.clear_lcd();
+
+    //Handle long messages by splitting or truncating
+    const maxLength = 16; //LCD character limit
+    let displayMessage = message;
+
+    if (message.length > maxLength) {
+      return this.scroll_long_message(message, speed);
+    }
+
+    for (let i = 0; i <= displayMessage.length; i++) {
+      const displayText = displayMessage.substring(0, 1).padEnd(maxLength, " ");
+      this.set_lcd_display(displayText);
+      await this.delay(speed);
+    }
+  }
+
+  async scroll_lcd_message(
+    messages: string[],
+    speed: number = 300
+  ): Promise<void> {
+    for (const message of messages) {
+      await this.type_lcd_message(message, speed);
+      await this.delay(500);
+    }
+  }
+
+  async scroll_long_message(
+    message: string,
+    speed: number = 150
+  ): Promise<void> {
+    const maxLength = 16;
+    const padding = " ".repeat(maxLength);
+
+    if (message.length <= maxLength) {
+      return this.type_lcd_message(message, speed);
+    }
+
+    // Scroll the message through the display
+    const fullMessage = padding + message + padding;
+
+    for (let i = 0; i < fullMessage.length - maxLength + 1; i++) {
+      const displayText = fullMessage.substring(i, i + maxLength);
+      this.set_lcd_display(displayText);
+      await this.delay(speed);
+    }
+  }
+
+  //loading animation on lcd
+  async show_lcd_loading(duration: number = 2000): Promise<void> {
+    const startTime = Date.now();
+    const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+    let frameIndex = 0;
+
+    while (Date.now() - startTime < duration) {
+      const progress = Math.min(
+        100,
+        Math.floor(((Date.now() - startTime) / duration) * 100)
+      );
+      const frame = frames[frameIndex % frames.length];
+      const display = `LOADING ${frame} ${progress}%`.padEnd(16, " ");
+
+      this.set_lcd_display(display);
+      frameIndex++;
+      await this.delay(100);
+    }
+
+    this.set_lcd_display("COMPLETE".padEnd(16, ""));
+  }
+
+  // ***************************** ~ COMBAT ~ *************************** \\
+
+  update_combat_screen(
+    hero: Character_Hero,
+    enemy: Character_Enemy,
+    combatMessage: string[]
+  ) {
+    //Update hero panel
+    this.heroPanel.setContent(
+      `{bold}Name:{/bold} ${hero.name}\n` +
+        `{bold}Level:{/bold} ${hero.level}\n` +
+        `{bold}Health:{/bold} ${hero.health}%\n` +
+        `{bold}Attack:{/bold} ${hero.attack}\n` +
+        `{bold}Defense:{/bold} ${hero.defense}`
+    );
+
+    //Update enemy panel
+    this.enemyPanel.setContent(
+      `{bold}Name:{/bold} ${enemy.name}\n` +
+        `{bold}Health:{/bold} ${enemy.health}%\n` +
+        `{bold}Attack:{/bold} ${enemy.attack}\n` +
+        `{bold}Defense:{/bold} ${enemy.defense}`
+    );
+
+    //Update health gauges
+    this.healthGauge.setData({
+      percent: hero.health,
+      stroke: hero.health > 30 ? "green" : "red",
+      fill: "white",
+    });
+
+    this.enemyHealthGauge.setData({
+      percent: enemy.health,
+      stroke: enemy.health > 30 ? "green" : "red",
+      fill: "white",
+    });
+
+    //Update combat log
+    this.combatLog.setContent(combatMessage.join("\n"));
+    this.combatLog.setScrollPerc(100); // Scroll to bottom
+
+    this.screen.render();
+  }
+
+  //Method to add message to combat message
+  add_combat_log(message: string): void {
+    this.combatLog.add(message);
+    this.screen.render();
+  }
+
+  // Show/ hide combat widgets based on phase
+  set_combat_visibility(visible: boolean): void {
+    const widgets = [
+      this.heroPanel,
+      this.enemyPanel,
+      this.healthGauge,
+      this.enemyHealthGauge,
+      this.combatLog,
+    ];
+
+    widgets.forEach((widget) => {
+      if (visible) {
+        widget.show();
+      } else {
+        widget.hide();
+      }
+    });
+
+    this.screen.render();
+  }
+
+  /*=======================================================*
+   |                    LAYOUTS
+   *=======================================================*/
+
+  async setLayout(layoutName: keyof typeof this.layoutConfigs): Promise<void> {
+    this.clear_game_area();
+    const config = this.layoutConfigs[layoutName];
+
+    // Apply layout configuration
+    await this.applyLayoutConfig(config);
+    this.currentLayout = layoutName;
+    this.screen.render();
+  }
+
+  private async applyLayoutConfig(config: any): Promise<void> {
+    // LCD configuration
+    if (config.lcd.visible === false) {
+      this.lcd.hide();
+    } else {
+      this.lcd.position = config.lcd;
+      this.lcd.show();
+      this.gameArea.append(this.lcd);
+    }
+
+    // Text Area configuration
+    if (config.textArea.visible === false) {
+      this.textArea.hide();
+    } else {
+      this.textArea.position = config.textArea;
+      this.textArea.show();
+      this.gameArea.append(this.textArea);
+    }
+
+    // Action Bar visibility
+    config.actionBar.visible === false
+      ? this.actionBar.hide()
+      : this.actionBar.show();
+
+    // Log Area visibility
+    config.logArea.visible === false
+      ? this.logArea.hide()
+      : this.logArea.show();
+
+    // Combat-specific elements
+    if (config.combatElements?.visible) {
+      await this.setupCombatLayout();
+    }
+  }
+
+  private async setupCombatLayout(): Promise<void> {
+    // Clear any existing combat elements
+    this.clearCombatElements();
+
+    // Health bars at top - using manual positioning
+    this.healthGauge = blessed.box({
+      top: 1,
+      left: 0,
+      width: "50%",
+      height: 3,
+      content: this.createHealthBar("HERO", 100, "green"),
+      tags: true,
+      border: { type: "line", fg: "green" },
+      style: { fg: "white", bg: "#1f2a1f" },
+    });
+
+    this.enemyHealthGauge = blessed.box({
+      top: 1,
+      left: "50%",
+      width: "50%",
+      height: 3,
+      content: this.createHealthBar("ENEMY", 100, "red"),
+      tags: true,
+      border: { type: "line", fg: "red" },
+      style: { fg: "white", bg: "#2a1f1f" },
+    });
+
+    // Character info panels
+    this.heroPanel = blessed.box({
+      top: 5,
+      left: 0,
+      width: "25%",
+      height: 8,
+      content: "{bold}HERO{/bold}\n\nReady for battle!",
+      tags: true,
+      border: { type: "line", fg: "blue" },
+      style: { fg: "white", bg: "#1f1f2a" },
+    });
+
+    this.enemyPanel = blessed.box({
+      top: 5,
+      left: "75%",
+      width: "25%",
+      height: 8,
+      content: "{bold}ENEMY{/bold}\n\nWaiting...",
+      tags: true,
+      border: { type: "line", fg: "red" },
+      style: { fg: "white", bg: "#2a1f1f" },
+    });
+
+    // Combat arena (middle)
+    const combatArena = blessed.box({
+      top: 5,
+      left: "25%",
+      width: "50%",
+      height: 8,
+      content: this.renderCombatArena(),
+      tags: true,
+      border: { type: "line", fg: "yellow" },
+      style: { fg: "white", bg: "#2a2a1f" },
+      align: "center",
+    });
+
+    // Combat log below arena
+    this.combatLog = blessed.log({
+      top: 14,
+      left: 0,
+      width: "100%",
+      height: "70%-14",
+      content: "Combat started!\n",
+      tags: true,
+      border: { type: "line", fg: "cyan" },
+      style: { fg: "white", bg: "#1f2a2a" },
+      scrollable: true,
+      scrollback: 100,
+    });
+
+    // Append all combat elements
+    this.gameArea.append(this.healthGauge);
+    this.gameArea.append(this.enemyHealthGauge);
+    this.gameArea.append(this.heroPanel);
+    this.gameArea.append(this.enemyPanel);
+    this.gameArea.append(combatArena);
+    this.gameArea.append(this.combatLog);
+  }
+
+  private createHealthBar(
+    label: string,
+    percent: number,
+    color: string
+  ): string {
+    const bars = Math.floor(percent / 10);
+    const bar =
+      "{" + color + "-fg}" + "█".repeat(bars) + "{/}" + "░".repeat(10 - bars);
+    return `{bold}${label}:{/bold} ${bar} ${percent}%`;
+  }
+
+  private renderCombatArena(): string {
+    return [
+      "{bold}⚔️ COMBAT ARENA ⚔️{/bold}",
+      "",
+      " Hero       vs       Enemy",
+      "  O                  O",
+      " /|\\                /|\\",
+      " / \\                / \\",
+      "",
+      "{yellow-fg}Choose your action!{/}",
+    ].join("\n");
+  }
+
+  private clearCombatElements(): void {
+    const combatElements = [
+      this.healthGauge,
+      this.enemyHealthGauge,
+      this.heroPanel,
+      this.enemyPanel,
+      this.combatLog,
+    ];
+
+    combatElements.forEach((element) => {
+      if (element) {
+        try {
+          element.detach();
+        } catch (e) {
+          // Element might not be attached yet
+        }
+      }
+    });
+  }
+
+  /*=======================================================*
+   |                    GAME METHODS           
+   *=======================================================*/
 
   //Update Phase Title
   update_phase_title(title: string): void {
@@ -222,15 +503,16 @@ Hero: ${this.get_health_bar(hero.health)} ${hero.health}% | Level: ${hero.level}
 Enemy: ${this.get_health_bar(enemy.health)} ${enemy.health}% 
     `.trim();
 
-    this.healthBar.setContent(healthContent);
+    // this.healthBar.setContent(healthContent); will include this other elements later
     this.screen.render();
   }
 
-  // UPDATE GAME AREA (main content)
+  // UPDATE GAME AREA
   update_game_area(content: string | string[]): void {
     const contentText = Array.isArray(content) ? content.join("\n") : content;
-    this.gameArea.setContent(contentText);
-    this.gameArea.setScrollPerc(0); // Scroll to top
+
+    this.textArea.setContent(contentText);
+    this.textArea.setScrollPerc(0); // Scroll to top
     this.screen.render();
   }
 
@@ -256,13 +538,13 @@ Enemy: ${this.get_health_bar(enemy.health)} ${enemy.health}%
 
   async screen_log(message: string, speed: number = 30) {
     let currentText = "";
+
     for (const char of message) {
       currentText += char;
       this.gameArea.setContent(currentText);
       this.screen.render();
       await this.delay(speed);
     }
-  
   }
 
   //Clear the input area and set new prompt
@@ -309,27 +591,29 @@ Enemy: ${this.get_health_bar(enemy.health)} ${enemy.health}%
   // Update multiple UI components at once
   updateScreen(title: string, content: string, actions: string[]) {
     this.clear_game_area();
+    // this.update_game_area(this.formatScreenContent(title, content));
+    this.set_lcd_display(title, "yellow");
     this.update_game_area(this.formatScreenContent(title, content));
     this.update_actions(actions);
   }
 
   private formatScreenContent(title: string, content: string): string {
-     const Ascii_Title = `
+    const Ascii_Title = `
 {#daa520-fg}${
-       Game_UI.ASCII.box_drawing_characters["tl"]
-     }${Game_UI.ASCII.box_drawing_characters["edge_x"].repeat(
-       title.length + 2
-     )}${Game_UI.ASCII.box_drawing_characters["tr"]}{/#daa520-fg}
+      Game_UI.ASCII.box_drawing_characters["tl"]
+    }${Game_UI.ASCII.box_drawing_characters["edge_x"].repeat(
+      title.length + 2
+    )}${Game_UI.ASCII.box_drawing_characters["tr"]}{/#daa520-fg}
 {#daa520-fg}${
-       Game_UI.ASCII.box_drawing_characters["edge_y"]
-     } {bold}${title}{/bold} ${
-       Game_UI.ASCII.box_drawing_characters["edge_y"]
-     }{/#daa520-fg}
+      Game_UI.ASCII.box_drawing_characters["edge_y"]
+    } {bold}${title}{/bold} ${
+      Game_UI.ASCII.box_drawing_characters["edge_y"]
+    }{/#daa520-fg}
 {#daa520-fg}${
-       Game_UI.ASCII.box_drawing_characters["bl"]
-     }${Game_UI.ASCII.box_drawing_characters["edge_x"].repeat(
-       title.length + 2
-     )}${Game_UI.ASCII.box_drawing_characters["br"]}{/#daa520-fg}
+      Game_UI.ASCII.box_drawing_characters["bl"]
+    }${Game_UI.ASCII.box_drawing_characters["edge_x"].repeat(
+      title.length + 2
+    )}${Game_UI.ASCII.box_drawing_characters["br"]}{/#daa520-fg}
     `;
     return `${Ascii_Title}\n\n${content}`;
   }
@@ -351,10 +635,82 @@ Enemy: ${this.get_health_bar(enemy.health)} ${enemy.health}%
     this.logArea.setContent("");
     this.screen.render();
   }
+
+  //   private async setupPlatformerLayout(): Promise<void> {
+  //     this.textArea.position = {
+  //         top: 1,
+  //         left: 'center',
+  //         width: 42, // Fixed width for game area
+  //         height: 22, // Fixed height
+  //         border: { type: 'line', fg: 'blue' }
+  //     };
+
+  //     this.actionBar.position = {
+  //         top: 24,
+  //         left: 0,
+  //         width: '100%',
+  //         height: 3
+  //     };
+
+  //     this.logArea.position = {
+  //         top: 28,
+  //         left: 0,
+  //         width: '100%',
+  //         height: '10%'
+  //     };
+
+  //     this.gameArea.append(this.textArea);
+  //     this.textArea.show();
+  //     this.actionBar.show();
+  //     this.logArea.show();
+  //     this.lcd.hide();
+  // }
+
+  // // Enemy.ts
+  // interface Enemy {
+  //     x: number;
+  //     y: number;
+  //     symbol: string;
+  //     health: number;
+  //     type: 'patrol' | 'shooter' | 'boss';
+  //     patrolRange: number;
+  //     direction: number;
+  // }
+
+  // class EnemyAI {
+  //     static updateEnemy(enemy: Enemy, player: Player, world: WorldLevel): void {
+  //         switch (enemy.type) {
+  //             case 'patrol':
+  //                 this.patrolBehavior(enemy, world);
+  //                 break;
+  //             case 'shooter':
+  //                 this.shooterBehavior(enemy, player);
+  //                 break;
+  //         }
+  //     }
+
+  //     private static patrolBehavior(enemy: Enemy, world: WorldLevel): void {
+  //         const newX = enemy.x + enemy.direction;
+
+  //         if (!world.tiles[Math.floor(enemy.y)][Math.floor(newX)]?.solid) {
+  //             enemy.x = newX;
+  //         } else {
+  //             enemy.direction *= -1;
+  //         }
+  //     }
+
+  //     private static shooterBehavior(enemy: Enemy, player: Player): void {
+  //         // Simple shooting logic - could shoot projectiles at player
+  //         if (Math.abs(enemy.x - player.x) < 10) {
+  //             // Enemy would shoot here
+  //         }
+  //     }
+  // }
 }
 
 
 
+//amnesty
+
 export { Game_UI };
-  
 
