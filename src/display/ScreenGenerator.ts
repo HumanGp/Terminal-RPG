@@ -1,14 +1,24 @@
+/**
+'##::::'##:'##::::'##:'##::::'##::::'###::::'##::: ##::'######:::'########::'########:
+ ##:::: ##: ##:::: ##: ###::'###:::'## ##::: ###:: ##:'##... ##:: ##.... ##:... ##..::
+ ##:::: ##: ##:::: ##: ####'####::'##:. ##:: ####: ##: ##:::..::: ##:::: ##:::: ##::::
+ #########: ##:::: ##: ## ### ##:'##:::. ##: ## ## ##: ##::'####: ########::::: ##::::
+ ##.... ##: ##:::: ##: ##. #: ##: #########: ##. ####: ##::: ##:: ##.....:::::: ##::::
+ ##:::: ##: ##:::: ##: ##:.:: ##: ##.... ##: ##:. ###: ##::: ##:: ##::::::::::: ##::::
+ ##:::: ##:. #######:: ##:::: ##: ##:::: ##: ##::. ##:. ######::: ##::::::::::: ##::::
+..:::::..:::.......:::..:::::..::..:::::..::..::::..:::......::::..::::::::::::..:::::
+ */
+
 import { Character_Enemy, Character_Hero } from "../types/characters_types";
 import { Game_UI } from "./GameUI";
-import type { GamePhase, ScreenData, ARTS,  } from "../types/UI_types";
-
+import type { GamePhase, ScreenData, ARTS } from "../types/UI_types";
 
 class ScreenGenerator {
   static generateScreen(
     phase: GamePhase,
-    hero: Character_Hero | null,
-    enemy: Character_Enemy | null,
-    area: keyof ARTS  = "CORRUPTED_FOREST"
+    hero?: Character_Hero | null,
+    enemy?: Character_Enemy | null,
+    area?: keyof ARTS
   ): ScreenData {
     switch (phase) {
       case "BOOT":
@@ -18,7 +28,7 @@ class ScreenGenerator {
       case "WORLD_MAP":
         return this.generate_world_map_screen(hero!);
       case "COMBAT":
-        return this.generate_combat_screen(hero!, enemy!, area);
+        return this.generate_combat_screen(hero!, enemy!, area!);
       case "INVENTORY":
         return this.generate_inventory_screen(hero!);
       case "SHOP":
@@ -113,7 +123,7 @@ class ScreenGenerator {
         `Current Level: ${hero.level} | Gold: ${hero.gold || 0}`,
       ],
 
-      actions: ["[1-4] Travel", "[I] Inventory", "[S] Shop", "[Q] Quit"],
+      actions: ["[1-4] Travel"],
       asciiArt: `generate world map ascii`,
     };
   }
@@ -135,6 +145,8 @@ class ScreenGenerator {
         Math.max(0, 10 - Math.floor(character.health / 10))
       )} ${character.health}%{/#daa520-fg}`;
 
+    const combat_status = this.get_combat_status(hero, enemy);
+
     return {
       title: `COMBAT - ${area.toUpperCase()}`,
       content: [
@@ -144,7 +156,7 @@ class ScreenGenerator {
         " ",
         `${character_health_ascii(enemy)}`,
         " ",
-        `${this.get_combat_status(hero, enemy)}`,
+        `${combat_status}`,
       ],
       actions: this.get_combat_actions(hero),
       asciiArt: this.get_combat_ascii(area),
@@ -152,30 +164,29 @@ class ScreenGenerator {
   }
 
   private static get_combat_ascii(area: keyof ARTS): string {
- 
-      const arts:ARTS = {
-      "CORRUPTED_FOREST": `
+    const arts: ARTS = {
+      CORRUPTED_FOREST: `
         O               .~~~.
        /|\\             / o o \\
        / \\             \\  ▽  /
       ⚔️                    ︿
       `,
 
-      "BUG_INFESTED_CAVES": `
+      BUG_INFESTED_CAVES: `
         O               .-.
        /|\\             (0.0)
        / \\              |=|
       🗡️                / \\
       `,
 
-      "GLITCH_CANYON": `
+      GLITCH_CANYON: `
         O               ╔═╗
        /|\\             ║∞║
        / \\             ╚═╝
       🔥                💫
       `,
 
-      "KERNEL_CITADEL": `
+      KERNEL_CITADEL: `
         O               ░▒▓█
        /|\\             █KING█  
        / \\             █▒░█▓█
@@ -201,39 +212,56 @@ class ScreenGenerator {
     return baseActions;
   }
 
-  private static get_combat_status(hero: Character_Hero, enemy: Character_Enemy): string {
+  private static get_combat_status(
+    hero: Character_Hero,
+    enemy: Character_Enemy
+  ): string {
     const status = [];
-      
+
     if (hero.health < 30) status.push("💔 Hero is badly wounded!");
     if (enemy.health < 30) status.push("🎯 Enemy is weak!");
-    // if (hero.statusEffects?.length > 0)
-      // status.push(`⚡ ${hero.statusEffects.join(", ")}`);
+    if (hero.health > 80) status.push("💪 Hero is in great shape!");
+    if (enemy.health > 80) status.push("😠 Enemy is strong!");
 
-    return status.join("\n") || "Combat is intense!";
+    // Add class-specific status hints
+    if (hero.class === "Mage" && (hero as any).mana < 30) {
+      status.push("🔮 Low mana!");
+    }
+    if (hero.class === "Rogue") {
+      status.push("⚡ High critical chance");
+    }
+    if (hero.class === "Warrior") {
+      status.push("🛡️ High defense");
+    }
+
+    return status.length > 0 ? status.join(" | ") : "Combat is intense!";
   }
-    
-  //INVENTORY SCREEN
-    private static generate_inventory_screen(hero: Character_Hero): ScreenData {
-    const items = hero.inventory.length > 0 
-      ? hero.inventory.map((item, index) => `[${index + 1}] ${item}`).join('\n')
-      : "Your inventory is empty!";
 
-     return {
-        title: "INVENTORY",
-        content: [
-            `Gold: ${hero.gold || 0}`,
-            `ITEMS: ${items}`,
-            // `EQUIPMENT: Weapon: ${hero.weapon || "Basic Sword"} Armor: ${hero.armor || "Leather Armor"}`
-        ],
-        actions: ["[1-9] Use Item", "[E] Equip", "[B] Back"],
-        asciiArt: `
+  //INVENTORY SCREEN
+  private static generate_inventory_screen(hero: Character_Hero): ScreenData {
+    const items =
+      hero.inventory.length > 0
+        ? hero.inventory
+            .map((item, index) => `[${index + 1}] ${item}`)
+            .join("\n")
+        : "Your inventory is empty!";
+
+    return {
+      title: "INVENTORY",
+      content: [
+        `Gold: ${hero.gold || 0}`,
+        `ITEMS: ${items}`,
+        // `EQUIPMENT: Weapon: ${hero.weapon || "Basic Sword"} Armor: ${hero.armor || "Leather Armor"}`
+      ],
+      actions: ["[1-9] Use Item", "[E] Equip", "[B] Back"],
+      asciiArt: `
         ╔══════════╗
         ║ 🎒 INV   ║
         ╠══════════╣
         ║ 💰🥤⚗️ 🗡️ ║
         ║ 🛡️ 🧪📜🔮 ║
         ╚══════════╝
-       `
+       `,
     };
   }
 
@@ -242,22 +270,22 @@ class ScreenGenerator {
     return {
       title: "MERCHANT'S SHOP",
       content: [
-            "Welcome traveler! What'll it be?",
-            " ",
-            "[1] Health Potion - 50 gold",
-            "• Restores 50 HP",
-            " ",
-            "[2] Mana Potion - 75 gold",  
-            "• Restores 30 MP",
-            " ",
-            "[3] Iron Sword - 200 gold",
-            " • +5 Attack",
-            " ",
-            "[4] Leather Armor - 150 gold",
-            "• +3 Defense",
-            " ",
-            `Your Gold: ${hero.gold || 0}`,
-        ],
+        "Welcome traveler! What'll it be?",
+        " ",
+        "[1] Health Potion - 50 gold",
+        "• Restores 50 HP",
+        " ",
+        "[2] Mana Potion - 75 gold",
+        "• Restores 30 MP",
+        " ",
+        "[3] Iron Sword - 200 gold",
+        " • +5 Attack",
+        " ",
+        "[4] Leather Armor - 150 gold",
+        "• +3 Defense",
+        " ",
+        `Your Gold: ${hero.gold || 0}`,
+      ],
       actions: ["[1-4] Buy", "[S] Sell", "[B] Back"],
       asciiArt: `
         ╔══════════╗
@@ -267,38 +295,37 @@ class ScreenGenerator {
         ║   🤝     ║
         ║ 🛒      🛍️ ║
         ╚══════════╝
-      `
+      `,
     };
   }
 
   // GAME OVER SCREEN
   private static generate_game_over_screen(hero: Character_Hero): ScreenData {
     const isVictory = hero.health > 0;
-    
+
     return {
       title: isVictory ? "VICTORY!" : "GAME OVER",
-      content: isVictory 
-          ?
-          [
-        `Congratulations ${hero.name}!`, 
-        " ",
-        "You have defeated the Glitch King and restored peace to the Code Realm!",
-        " ", 
-        "Final Stats: ",
-        `Level: ${hero.level}`,
-        `Gold: ${hero.gold || 0}`,
-              `Enemies Defeated: ${hero.enemiesDefeated || 0}`
+      content: isVictory
+        ? [
+            `Congratulations ${hero.name}!`,
+            " ",
+            "You have defeated the Glitch King and restored peace to the Code Realm!",
+            " ",
+            "Final Stats: ",
+            `Level: ${hero.level}`,
+            `Gold: ${hero.gold || 0}`,
+            `Enemies Defeated: ${hero.enemiesDefeated || 0}`,
           ]
-          :
-          [
+        : [
             `You have been defeated...`,
             "But your legend will inspire others",
             "to continue the fight against the Glitch King.",
-             `Final Level: ${hero.level}`,
-              `Gold Collected: ${hero.gold || 0}`,
+            `Final Level: ${hero.level}`,
+            `Gold Collected: ${hero.gold || 0}`,
           ],
       actions: ["[R] Restart", "[Q] Quit"],
-      asciiArt: isVictory ? `
+      asciiArt: isVictory
+        ? `
         ╔══════════╗
         ║ 🏆 WIN!  ║
         ╠══════════╣
@@ -306,7 +333,8 @@ class ScreenGenerator {
         ║  🎉🎊   ║
         ║   💫    ║
         ╚══════════╝
-      ` : `
+      `
+        : `
         ╔══════════╗
         ║ 💀 LOST  ║
         ╠══════════╣
@@ -314,7 +342,7 @@ class ScreenGenerator {
         ║  😵 💀  ║  
         ║   ⚰️    ║
         ╚══════════╝
-      `
+      `,
     };
   }
 
@@ -323,7 +351,7 @@ class ScreenGenerator {
       title: "TERMINAL RPG",
       content: ["Welcome to the adventure!"],
       actions: ["[ENTER] Continue"],
-      asciiArt: "🎮"
+      asciiArt: "🎮",
     };
   }
 }
