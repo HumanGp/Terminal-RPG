@@ -1,7 +1,18 @@
-import { ScreenGenerator } from "../../display/ScreenGenerator";
-import { GamePhaseHandler } from "./GamePhaseHandler";
+// ********* combat phase handler ********
 
-class CombatPhaseHandler extends GamePhaseHandler {
+import { Game_UI } from "../../display/GameUI";
+import { Combat } from "../../game/combat";
+import { GameStore } from "../GameState";
+import { GamePhaseHandler } from "./GamePhaseHandler_base";
+
+export class CombatPhaseHandler extends GamePhaseHandler {
+  private combat: Combat;
+
+  constructor(gameStore: GameStore, ui: Game_UI, combat: Combat) {
+    super(gameStore, ui);
+    this.combat = combat;
+  }
+
   protected async onEnter(): Promise<void> {
     const state = this.getState();
     this.gameStore.addCombatMessage(`Entering combat in ${state.currentArea}`);
@@ -9,19 +20,10 @@ class CombatPhaseHandler extends GamePhaseHandler {
 
   protected async render(): Promise<void> {
     const state = this.getState();
-    const screenData = ScreenGenerator.generateScreen(
-      "COMBAT",
-      state.hero,
-      state.enemy,
-      state.currentArea
-    );
+    
+    this.combat.start();
 
-    this.ui.updateScreen(
-      screenData.title,
-      screenData.content.join("\n"),
-      screenData.actions
-    );
-    await this.ui.add_log(screenData.asciiArt, 0);
+    await this.ui.add_log("Working on the combat", 0);
   }
 
   protected async handleInput(): Promise<void> {
@@ -46,5 +48,3 @@ class CombatPhaseHandler extends GamePhaseHandler {
     this.gameStore.clearCombatHistory();
   }
 }
-
-export { CombatPhaseHandler };

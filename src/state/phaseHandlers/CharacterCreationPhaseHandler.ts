@@ -1,7 +1,11 @@
-import { ScreenGenerator } from "../../display/ScreenGenerator";
-import { GamePhaseHandler } from "./GamePhaseHandler";
+// ******** Character Phase  Handler ********
 
-class CharacterCreationPhaseHandler extends GamePhaseHandler {
+import { Mage, Rogue, Warrior } from "../../components/characters/Characters";
+import { ScreenGenerator } from "../../display/ScreenGenerator";
+import { CHARACTER_CHOICE } from "../../types/game_types";
+import { GamePhaseHandler } from "./GamePhaseHandler_base";
+
+export class CharacterCreationPhaseHandler extends GamePhaseHandler {
   protected async onEnter(): Promise<void> {
     await this.ui.add_log("Character creation started...", 30);
   }
@@ -41,16 +45,28 @@ class CharacterCreationPhaseHandler extends GamePhaseHandler {
     }
   }
 
-  private createHero(choice: string): any {
-    // Replace 'any' with your Character_Hero type
-    // Your hero creation logic here
-    // This should return a proper Character_Hero instance
-    return { name: "Hero", level: 1, health: 100 }; // Placeholder
+  private createHero(choice: CHARACTER_CHOICE, name: string = ""): any {
+    let hero;
+    switch (choice) {
+      case "W":
+        hero = new Warrior(name);
+        break;
+      case "R":
+        hero = new Rogue(name);
+        break;
+      case "M":
+        hero = new Mage(name);
+        break;
+      default:
+        hero = new Warrior(name);
+        break;
+    }
+    return hero;
   }
 
   protected async onExit(): Promise<void> {
+    //update layout and phase
+    await this.ui.setLayout("worldMap");
     this.gameStore.setPhase("WORLD_MAP");
   }
 }
-
-export { CharacterCreationPhaseHandler };

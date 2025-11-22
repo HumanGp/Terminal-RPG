@@ -1,43 +1,43 @@
+// ************* Game Over Phase Handler ***************
+
 import { ScreenGenerator } from "../../display/ScreenGenerator";
 import { GamePhaseHandler } from "./GamePhaseHandler_base";
 
-// ************* World Map Phase Hanlder **************
-export class WorldMapPhaseHandler extends GamePhaseHandler {
+export class GameOverPhaseHandler extends GamePhaseHandler {
   protected async onEnter(): Promise<void> {
-    await this.ui.add_log("Entering world map...", 30);
+    await this.ui.add_log("Game over phase entered...", 30);
   }
 
   protected async render(): Promise<void> {
     const state = this.getState();
-    const screenData = ScreenGenerator.generateScreen("WORLD_MAP", state.hero);
+    const screenData = ScreenGenerator.generateScreen("GAME_OVER", state.hero);
     this.ui.updateScreen(
       screenData.title,
       screenData.content.join("\n"),
       screenData.actions
     );
+    await this.ui.add_log(screenData.asciiArt, 0);
   }
 
   protected async handleInput(): Promise<void> {
     let validInput = false;
-    const state = this.getState();
 
     while (!validInput) {
       const input = await this.ui.getInput("Choose action: ");
 
       switch (input) {
-        case "1":
-          this.gameStore.setArea("FOREST_AREA");
-          this.gameStore.setPhase("COMBAT");
+        case "R":
+          await this.delay(1000);
+          this.gameStore.reset();
           validInput = true;
           break;
-        //  other World Maps Later...
         default:
-          await this.ui.add_log("Invalid action!", 30);
+          await this.ui.add_log("Choose [R] or [Q]", 30);
       }
     }
   }
 
   protected async onExit(): Promise<void> {
-    await this.ui.setLayout("combat");
+    // Final cleanup if needed
   }
 }
