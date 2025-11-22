@@ -6,8 +6,8 @@ import { ARTS, GamePhase } from "../types/UI_types";
 const initialGameState: GameState = {
   currentPhase: "BOOT",
   hero: null,
-  enemy: null,
-  currentArea: "CORRUPTED_FOREST",
+  // enemy: null,
+  currentArea: "FOREST_AREA",
   combatHistory: [],
   gameStats: {
     enemiesDefeated: 0,
@@ -22,7 +22,8 @@ class GameStore {
   private listeners: Array<(state: GameState) => void> = [];
 
   constructor(initialState: GameState = initialGameState) {
-    this.state = { ...initialState };
+    this.state = { ...initialState, };
+
   }
 
   // Get current state
@@ -59,9 +60,9 @@ class GameStore {
     this.setState({ hero });
   }
 
-  setEnemy(enemy: Character_Enemy): void {
-    this.setState({ enemy });
-  }
+  // setEnemy(enemy: Character_Enemy): void {
+  //   this.setState({ enemy });
+  // }
 
   setArea(area: keyof ARTS): void {
     this.setState({ currentArea: area });

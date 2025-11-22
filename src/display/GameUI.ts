@@ -11,9 +11,10 @@
 
 import { Widgets } from "blessed";
 import type { Character_Enemy, Character_Hero } from "../types/characters_types";
-import type { ASCII_Characters } from "../types/UI_types";
+import type { ASCII_Characters, LayoutConfig } from "../types/UI_types";
 import {
   actionBar,
+  Arena,
   ASCII,
   combatLog,
   enemyHealthGauge,
@@ -27,22 +28,21 @@ import {
   phaseTitle,
   screen,
   textArea,
-  layoutConfigs
 } from "../components/UI/ui";
 
 var blessed = require("blessed");
 var contrib = require("blessed-contrib");
 
 class Game_UI {
-  private screen!: Widgets.Screen;
+  public screen!: Widgets.Screen;
   private gameArea!: Widgets.BoxElement;
   private textArea!: Widgets.BoxElement;
   private logArea!: Widgets.Log;
   private phaseTitle!: Widgets.Log;
   private inputArea!: Widgets.TextboxElement;
   private actionBar!: Widgets.BoxElement;
-  private layoutConfigs!: typeof layoutConfigs;
-  private currentLayout!: keyof typeof layoutConfigs;
+  private layoutConfigs!: LayoutConfig;
+  private currentLayout!: keyof LayoutConfig;
   private lcd: any;
   private heroPanel!: Widgets.BoxElement;
   private enemyPanel!: Widgets.BoxElement;
@@ -51,7 +51,9 @@ class Game_UI {
   private enemyHealthGauge: any = null;
   static ASCII: ASCII_Characters = ASCII;
 
-  constructor() {
+  constructor(layoutConfigs: LayoutConfig) {
+    this.layoutConfigs = layoutConfigs; // initialize with layout configs
+    this.currentLayout = "boot"; // default layout | fallback layout
     this.initialize_standard_widgets();
     this.initialize_screen_events();
     this.initialize_gameArea_events();
@@ -83,10 +85,10 @@ class Game_UI {
   }
 
   private initialize_gameArea_events(): void {
-    this.gameArea.on("click", (mouse) => {
-      this.textArea.setContent(`You clicked ${mouse.x} , ${mouse.y}`);
-      this.screen.render();
-    });
+    // this.gameArea.on("click", (mouse) => {
+    //   this.textArea.setContent(`You clicked ${mouse.x} , ${mouse.y}`);
+    //   this.screen.render();
+    // });
   }
 
   private initialize_standard_widgets(): void {
@@ -104,7 +106,6 @@ class Game_UI {
     this.screen.append(this.actionBar);
     this.screen.append(this.logArea);
     this.screen.append(this.inputArea);
-    this.gameArea.append(this.lcd);
     this.gameArea.append(this.textArea);
   }
 
@@ -300,123 +301,121 @@ class Game_UI {
     this.clear_game_area();
     const config = this.layoutConfigs[layoutName];
 
-    // Apply layout configuration
-    await this.applyLayoutConfig(config);
+    switch (layoutName) {
+      case "boot":
+        //@ts-expect-error
+        await this.setupBootLayout(config);
+        break;
+      case "characterCreation":
+        //@ts-expect-error
+        await this.setupCharacterCreationLayout(config);
+        break;
+      case "worldMap":
+        //@ts-expect-error
+        await this.setupWorldMapLayout(config);
+        break;
+      case "combat":
+        //@ts-expect-error
+        await this.setupCombatLayout(config);
+        break;
+      default:
+        //@ts-expect-error
+        await this.setupBootLayout(config);
+    }
+
     this.currentLayout = layoutName;
     this.screen.render();
   }
 
-  private async applyLayoutConfig(config: any): Promise<void> {
-    // LCD configuration
-    if (config.lcd.visible === false) {
-      this.lcd.hide();
-    } else {
-      this.lcd.position = config.lcd;
-      this.lcd.show();
-      this.gameArea.append(this.lcd);
-    }
+  private async setupBootLayout(config: {
+    lcd: {
+      top: string;
+      left: string;
+      width: string;
+      height: number;
+    };
+    textArea: {
+      visible: boolean;
+    };
+    actionBar: {
+      visible: boolean;
+    };
+  }) {
+    this.lcd.position = {
+      ...config.lcd,
+    };
 
-    // Text Area configuration
-    if (config.textArea.visible === false) {
-      this.textArea.hide();
-    } else {
-      this.textArea.position = config.textArea;
-      this.textArea.show();
-      this.gameArea.append(this.textArea);
-    }
-
-    // Action Bar visibility
-    config.actionBar.visible === false
-      ? this.actionBar.hide()
-      : this.actionBar.show();
-
-    // Log Area visibility
-    config.logArea.visible === false
-      ? this.logArea.hide()
-      : this.logArea.show();
-
-    // Combat-specific elements
-    if (config.combatElements?.visible) {
-      await this.setupCombatLayout();
-    }
+    this.gameArea.append(this.lcd);
+    this.textArea.hide();
   }
 
-  private async setupCombatLayout(): Promise<void> {
+  private async setupCharacterCreationLayout(config: {
+    lcd: {
+      top: string;
+      left: string;
+      width: string;
+      height: number;
+    };
+    textArea: {
+      visible: boolean;
+    };
+    actionBar: {
+      visible: boolean;
+    };
+  }) {
+    this.lcd.position = {
+      ...config.lcd,
+    };
+    this.textArea.show();
+  }
+
+  private async setupWorldMapLayout(config: {
+    lcd: {
+      top: string;
+      left: string;
+      width: string;
+      height: number;
+    };
+    textArea: {
+      visible: boolean;
+    };
+    actionBar: {
+      visible: boolean;
+    };
+  }) {
+    this.lcd.position = {
+      ...config.lcd,
+    };
+  }
+
+
+  async setupCombatLayout(): Promise<void> {
     // Clear any existing combat elements
     this.clearCombatElements();
+    this.clear_game_area();
 
     // Health bars at top - using manual positioning
     this.healthGauge = blessed.box({
-      top: 1,
-      left: 0,
-      width: "50%",
-      height: 3,
+      ...healthGauge,
       content: this.createHealthBar("HERO", 100, "green"),
-      tags: true,
-      border: { type: "line", fg: "green" },
-      style: { fg: "white", bg: "#1f2a1f" },
     });
-
     this.enemyHealthGauge = blessed.box({
-      top: 1,
-      left: "50%",
-      width: "50%",
-      height: 3,
+      ...enemyHealthGauge,
       content: this.createHealthBar("ENEMY", 100, "red"),
-      tags: true,
-      border: { type: "line", fg: "red" },
-      style: { fg: "white", bg: "#2a1f1f" },
     });
 
     // Character info panels
-    this.heroPanel = blessed.box({
-      top: 5,
-      left: 0,
-      width: "25%",
-      height: 8,
-      content: "{bold}HERO{/bold}\n\nReady for battle!",
-      tags: true,
-      border: { type: "line", fg: "blue" },
-      style: { fg: "white", bg: "#1f1f2a" },
-    });
-
-    this.enemyPanel = blessed.box({
-      top: 5,
-      left: "75%",
-      width: "25%",
-      height: 8,
-      content: "{bold}ENEMY{/bold}\n\nWaiting...",
-      tags: true,
-      border: { type: "line", fg: "red" },
-      style: { fg: "white", bg: "#2a1f1f" },
-    });
+    this.heroPanel = blessed.box(heroPanel);
+    this.enemyPanel = blessed.box(enemyPanel);
 
     // Combat arena (middle)
     const combatArena = blessed.box({
-      top: 5,
-      left: "25%",
-      width: "50%",
-      height: 8,
+      ...Arena,
       content: this.renderCombatArena(),
-      tags: true,
-      border: { type: "line", fg: "yellow" },
-      style: { fg: "white", bg: "#2a2a1f" },
-      align: "center",
     });
 
     // Combat log below arena
-    this.combatLog = blessed.log({
-      top: 14,
-      left: 0,
-      width: "100%",
-      height: "70%-14",
-      content: "Combat started!\n",
-      tags: true,
-      border: { type: "line", fg: "cyan" },
-      style: { fg: "white", bg: "#1f2a2a" },
-      scrollable: true,
-      scrollback: 100,
-    });
+    this.combatLog = blessed.log(combatLog);
 
     // Append all combat elements
     this.gameArea.append(this.healthGauge);
@@ -627,7 +626,8 @@ Enemy: ${this.get_health_bar(enemy.health)} ${enemy.health}%
 
   // CLEAR METHODS
   clear_game_area(): void {
-    this.gameArea.setContent("");
+    this.gameArea.setContent(""); // clear game area
+    this.textArea.setContent(""); // clear textArea (game area childnode)
     this.screen.render();
   }
 
@@ -636,77 +636,82 @@ Enemy: ${this.get_health_bar(enemy.health)} ${enemy.health}%
     this.screen.render();
   }
 
-  //   private async setupPlatformerLayout(): Promise<void> {
-  //     this.textArea.position = {
-  //         top: 1,
-  //         left: 'center',
-  //         width: 42, // Fixed width for game area
-  //         height: 22, // Fixed height
-  //         border: { type: 'line', fg: 'blue' }
-  //     };
+  async setupPlatformerLayout(): Promise<void> {
+    this.textArea.position = {
+      top: 1,
+      left: "center",
+      //@ts-expect-error
+      width: 42, // Fixed width for game area
+      height: 22, // Fixed height
+      border: { type: "line", fg: "blue" },
+    };
 
-  //     this.actionBar.position = {
-  //         top: 24,
-  //         left: 0,
-  //         width: '100%',
-  //         height: 3
-  //     };
+    this.actionBar.position = {
+      top: 24,
+      left: 0,
+      //@ts-expect-error
 
-  //     this.logArea.position = {
-  //         top: 28,
-  //         left: 0,
-  //         width: '100%',
-  //         height: '10%'
-  //     };
+      width: "100%",
+      height: 3,
+    };
 
-  //     this.gameArea.append(this.textArea);
-  //     this.textArea.show();
-  //     this.actionBar.show();
-  //     this.logArea.show();
-  //     this.lcd.hide();
-  // }
+    this.logArea.position = {
+      top: 28,
+      left: 0,
+      //@ts-expect-error
 
-  // // Enemy.ts
-  // interface Enemy {
-  //     x: number;
-  //     y: number;
-  //     symbol: string;
-  //     health: number;
-  //     type: 'patrol' | 'shooter' | 'boss';
-  //     patrolRange: number;
-  //     direction: number;
-  // }
+      width: "100%",
+      height: "10%",
+    };
 
-  // class EnemyAI {
-  //     static updateEnemy(enemy: Enemy, player: Player, world: WorldLevel): void {
-  //         switch (enemy.type) {
-  //             case 'patrol':
-  //                 this.patrolBehavior(enemy, world);
-  //                 break;
-  //             case 'shooter':
-  //                 this.shooterBehavior(enemy, player);
-  //                 break;
-  //         }
-  //     }
-
-  //     private static patrolBehavior(enemy: Enemy, world: WorldLevel): void {
-  //         const newX = enemy.x + enemy.direction;
-
-  //         if (!world.tiles[Math.floor(enemy.y)][Math.floor(newX)]?.solid) {
-  //             enemy.x = newX;
-  //         } else {
-  //             enemy.direction *= -1;
-  //         }
-  //     }
-
-  //     private static shooterBehavior(enemy: Enemy, player: Player): void {
-  //         // Simple shooting logic - could shoot projectiles at player
-  //         if (Math.abs(enemy.x - player.x) < 10) {
-  //             // Enemy would shoot here
-  //         }
-  //     }
-  // }
+    this.gameArea.append(this.textArea);
+    this.textArea.show();
+    this.actionBar.show();
+    this.logArea.show();
+    this.lcd.hide();
+  }
 }
+
+
+interface Enemy {
+  x: number;
+  y: number;
+  symbol: string;
+  health: number;
+  type: "patrol" | "shooter" | "boss";
+  patrolRange: number;
+  direction: number;
+}
+
+// class EnemyAI {
+//   static updateEnemy(enemy: Enemy, player: Player, world: WorldLevel): void {
+//     switch (enemy.type) {
+//       case "patrol":
+//         this.patrolBehavior(enemy, world);
+//         break;
+//       case "shooter":
+//         this.shooterBehavior(enemy, player);
+//         break;
+//     }
+//   }
+
+//   private static patrolBehavior(enemy: Enemy, world: WorldLevel): void {
+//     const newX = enemy.x + enemy.direction;
+
+//     if (!world.tiles[Math.floor(enemy.y)][Math.floor(newX)]?.solid) {
+//       enemy.x = newX;
+//     } else {
+//       enemy.direction *= -1;
+//     }
+//   }
+
+//   private static shooterBehavior(enemy: Enemy, player: Player): void {
+//     // Simple shooting logic - could shoot projectiles at player
+//     if (Math.abs(enemy.x - player.x) < 10) {
+//       // Enemy would shoot here
+//     }
+//   }
+// }
 
 
 

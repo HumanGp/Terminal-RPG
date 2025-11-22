@@ -12,6 +12,8 @@
 import { Character_Enemy, Character_Hero } from "../types/characters_types";
 import { Game_UI } from "./GameUI";
 import type { GamePhase, ScreenData, ARTS } from "../types/UI_types";
+import { forestAreaASCII, WorldMaps } from "../assets/maps/maps";
+
 
 class ScreenGenerator {
   static generateScreen(
@@ -28,7 +30,7 @@ class ScreenGenerator {
       case "WORLD_MAP":
         return this.generate_world_map_screen(hero!);
       case "COMBAT":
-        return this.generate_combat_screen(hero!, enemy!, area!);
+        return this.generate_combat_screen(hero!, area!);
       case "INVENTORY":
         return this.generate_inventory_screen(hero!);
       case "SHOP":
@@ -96,29 +98,13 @@ class ScreenGenerator {
         "··········································",
         " ",
 
-        "[1] CORRUPTED FOREST",
+        "[1] FOREST AREA",
         " • Level: 1-3",
-        " • Enemies: Syntax Errors, Type Bugs",
         ` • Status: ${hero.level >= 1 ? "READY" : "LOCKED"}`,
         " ",
 
-        "[2] BUG-INFESTED CAVES",
-        " • Level: 4-6",
-        " • Enemies: Memory Leeches, Null Pointers",
-        ` • Status: ${hero.level >= 4 ? "READY" : "LOCKED"}`,
-        " ",
+        `${forestAreaASCII.join('\n')}`,
 
-        "[3] GLITCH CANYON",
-        " • Level: 7-9",
-        " • Enemies: Infinite Loops, Stack Overflow",
-        ` • Status: ${hero.level >= 7 ? "READY" : "LOCKED"} `,
-        "",
-
-        "[4] KERNEL CITADEL",
-        " • Level: 10+",
-        " • Enemy: The Glitch King",
-        ` • Status: ${hero.level >= 10 ? "READY" : "LOCKED"}`,
-        " ",
 
         `Current Level: ${hero.level} | Gold: ${hero.gold || 0}`,
       ],
@@ -130,7 +116,6 @@ class ScreenGenerator {
 
   private static generate_combat_screen(
     hero: Character_Hero,
-    enemy: Character_Enemy,
     area: keyof ARTS
   ): ScreenData {
     const ASCII = Game_UI.ASCII;
@@ -145,27 +130,25 @@ class ScreenGenerator {
         Math.max(0, 10 - Math.floor(character.health / 10))
       )} ${character.health}%{/#daa520-fg}`;
 
-    const combat_status = this.get_combat_status(hero, enemy);
+    const combat_status = this.get_combat_status(hero, hero);
 
     return {
-      title: `COMBAT - ${area.toUpperCase()}`,
+      title: `COMBAT - $`,
       content: [
         `${character_health_ascii(hero)}`,
         " ",
-        "VS",
-        " ",
-        `${character_health_ascii(enemy)}`,
+        "VS",    
         " ",
         `${combat_status}`,
       ],
       actions: this.get_combat_actions(hero),
-      asciiArt: this.get_combat_ascii(area),
+      asciiArt: 'this.get_combat_ascii(area)',
     };
   }
 
   private static get_combat_ascii(area: keyof ARTS): string {
     const arts: ARTS = {
-      CORRUPTED_FOREST: `
+      FOREST_AREA: `
         O               .~~~.
        /|\\             / o o \\
        / \\             \\  ▽  /
@@ -194,7 +177,7 @@ class ScreenGenerator {
       `,
     };
 
-    return arts[area] || arts["CORRUPTED_FOREST"];
+    return arts[area] || arts["FOREST_AREA"];
   }
 
   private static get_combat_actions(hero: Character_Hero): string[] {

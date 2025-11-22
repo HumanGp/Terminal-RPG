@@ -2,6 +2,8 @@
  |             UI COMPONENTS OBJECT                      |
  *=======================================================*/
 
+import { Game_UI } from "../../display/GameUI";
+
  // *********** ~ main screen components ~ **************
 
 export const screen = {
@@ -157,53 +159,70 @@ export const textArea = {
 
 // ******** ~ combat screen components ~ **********
 
-export const heroPanel = {
-  label: "{bold}Hero{/bold}",
+export const healthGauge = {
+  top: 1,
+  left: 0,
+  width: "50%",
+  height: 3,
   tags: true,
   border: { type: "line", fg: "green" },
-  style: {
-    fg: "white",
-    bg: "#1f2a1f",
-  },
-};
-
-export const enemyPanel = {
-  label: "{bold}Enemy{/bold}",
-  tags: true,
-  border: { type: "line", fg: "red" },
-  style: {
-    fg: "white",
-    bg: "#2a1f1f",
-  },
-};
-
-export const healthGauge = {
-  label: "Hero Health",
-  percent: 100,
-  stroke: "green",
-  fill: "white",
+  style: { fg: "white", bg: "#1f2a1f" },
 };
 
 export const enemyHealthGauge = {
-  label: "Enemy Health",
-  percent: 100,
-  stroke: "red",
-  fill: "white",
+  top: 1,
+  left: "50%",
+  width: "50%",
+  height: 3,
+  tags: true,
+  border: { type: "line", fg: "red" },
+  style: { fg: "white", bg: "#2a1f1f" },
+};
+
+export const heroPanel = {
+  top: 5,
+  left: 0,
+  width: "25%",
+  height: 8,
+  content: "{bold}HERO{/bold}\n\nReady for battle!",
+  tags: true,
+  border: { type: "line", fg: "blue" },
+  style: { fg: "white", bg: "#1f1f2a" },
+};
+
+export const enemyPanel = {
+  top: 5,
+  left: "75%",
+  width: "25%",
+  height: 8,
+  content: "{bold}ENEMY{/bold}\n\nWaiting...",
+  tags: true,
+  border: { type: "line", fg: "red" },
+  style: { fg: "white", bg: "#2a1f1f" },
 };
 
 export const combatLog = {
-  label: "{bold}Combat Log{/bold}",
+  top: 14,
+  left: 0,
+  width: "100%",
+  height: "70%-14",
+  content: "Combat started!\n",
+  tags: true,
+  border: { type: "line", fg: "cyan" },
+  style: { fg: "white", bg: "#1f2a2a" },
+  scrollable: true,
+  scrollback: 100,
+};
+
+export const Arena = {
+  top: 5,
+  left: "25%",
+  width: "50%",
+  height: 8,
   tags: true,
   border: { type: "line", fg: "yellow" },
-  style: {
-    fg: "white",
-    bg: "#2a2a1f",
-  },
-  scrollback: 100,
-  scrollbar: {
-    ch: "░",
-    style: { fg: "#d4af37" },
-  },
+  style: { fg: "white", bg: "#2a2a1f" },
+  align: "center",
 };
 
 export const ASCII = {
@@ -233,10 +252,10 @@ export const ASCII = {
 
 export const layoutConfigs = {
   boot: {
-    lcd: { top: "center", left: "center", width: "90%", height: 6 },
+    lcd: { top: "center", left: "center", width: "90%", height: 6 , visible: true},
     textArea: { visible: false },
-    actionBar: { visible: false },
-    logArea: { visible: false },
+    actionBar: { visible: true },
+    logArea: { visible: true },
   },
 
   characterCreation: {
