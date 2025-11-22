@@ -40,12 +40,92 @@ interface ScreenData {
 }
 
 type ARTS = {
-  CORRUPTED_FOREST: string;
+  FOREST_AREA: string;
   BUG_INFESTED_CAVES: string;
   GLITCH_CANYON: string;
   KERNEL_CITADEL: string;
 };
 
+interface TextArea {
+  visible: boolean;
+  top?: number | string;
+  left?: number | string;
+  height?: string | number;
+  width?: string | number;
+}
+
+interface LCD {
+  top: string | number;
+  left: string | number;
+  width: string | number;
+  height: number | string;
+  visible?: boolean;
+}
+
+interface ActionBar {
+  visible: boolean
+}
+
+interface LogArea {
+  visible: boolean
+}
+
+
+export interface LayoutConfig {
+  boot: {
+    lcd: {
+      top: string;
+      left: string;
+      width: string;
+      height: number;
+    };
+    textArea: {
+      visible: boolean;
+    };
+    actionBar: {
+      visible: boolean;
+    };
+    logArea: {
+      visible: boolean;
+    };
+  };
+  characterCreation: {
+    lcd: {
+      top: number;
+      left: string;
+      width: string;
+      height: number;
+    };
+    textArea: {
+      top: number;
+      left: number;
+      width: string;
+      height: string;
+      visible: boolean;
+    };
+    actionBar: {
+      visible: boolean;
+    };
+    logArea: {
+      visible: boolean;
+    };
+  };
+
+  worldMap: {
+    lcd: LCD;
+    textArea: TextArea;
+    actionBar: ActionBar;
+    logArea: LogArea;
+  };
+
+  combat: {
+    lcd: LCD;
+    textArea: TextArea;
+    actionBar: ActionBar;
+    logArea: LogArea;
+    combatElements: { visible: boolean };
+  };
+}
 
 export type {
   UI_,

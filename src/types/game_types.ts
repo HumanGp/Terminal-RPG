@@ -12,7 +12,7 @@ type MAGE_ACTION = 'F' | 'I';                   // Mage hero instance inputs
 interface GameState {
   currentPhase: GamePhase;
   hero: Character_Hero | null;
-  enemy: Character_Enemy | null;
+  // enemy: Character_Enemy | null;
   currentArea: keyof ARTS;
   combatHistory: string[];
   gameStats: {
