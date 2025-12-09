@@ -9,9 +9,30 @@
 ..:::::..:::.......:::..:::::..::..:::::..::..::::..:::......::::..::::::::::::..:::::
  */
 
+
+interface UIConfig {
+  lcd: {
+    top: string;
+    left: string;
+    width: string;
+    height: number;
+  };  
+  textArea: { visible?: boolean };
+  actionBar: { visible?: boolean };
+  logArea: { visible?: boolean };
+}
+
+interface BootUIConfig extends UIConfig {};
+
+interface CCUIConfig extends UIConfig { }; // Character Creation Config
+
+interface WMUIConfig extends UIConfig { };
+
+interface CombatUIConfig extends UIConfig { };
+
 import { Widgets } from "blessed";
 import type { Character_Enemy, Character_Hero } from "../types/characters_types";
-import type { ASCII_Characters, LayoutConfig } from "../types/UI_types";
+import type { ASCII_Characters, GamePhase, LayoutConfig } from "../types/UI_types";
 import {
   actionBar,
   Arena,
@@ -34,6 +55,9 @@ var blessed = require("blessed");
 var contrib = require("blessed-contrib");
 
 class Game_UI {
+  // singleton instance
+  private static instance: Game_UI | null = null;
+
   public screen!: Widgets.Screen;
   private gameArea!: Widgets.BoxElement;
   private textArea!: Widgets.BoxElement;
@@ -41,8 +65,8 @@ class Game_UI {
   private phaseTitle!: Widgets.Log;
   private inputArea!: Widgets.TextboxElement;
   private actionBar!: Widgets.BoxElement;
-  private layoutConfigs!: LayoutConfig;
-  private currentLayout!: keyof LayoutConfig;
+  private layoutConfigs!: UIConfig[];
+  private currentLayout!: Lowercase<GamePhase>;
   private lcd: any;
   private heroPanel!: Widgets.BoxElement;
   private enemyPanel!: Widgets.BoxElement;
@@ -51,20 +75,43 @@ class Game_UI {
   private enemyHealthGauge: any = null;
   static ASCII: ASCII_Characters = ASCII;
 
-  constructor(layoutConfigs: LayoutConfig) {
+  // Private constructor to prevent direct construction
+  private constructor(layoutConfigs: UIConfig[]) {
     this.layoutConfigs = layoutConfigs; // initialize with layout configs
     this.currentLayout = "boot"; // default layout | fallback layout
     this.initialize_standard_widgets();
     this.initialize_screen_events();
     this.initialize_gameArea_events();
+  }
 
-    // this.initialize_combat_widgets();
-    // this.initialize_lcd();
-    // this.grid.applyLayout(screen);
+  // static methods to get the singleton instance
+  public static getInstance(layoutConfigs?: UIConfig[]): Game_UI {
+    if (!Game_UI.instance) {
+      if (!layoutConfigs) {
+        throw new Error(
+          "Layout config must be provided when creating the first instance"
+        );
+      }
+      Game_UI.instance = new Game_UI(layoutConfigs);
+    }
+    return Game_UI.instance;
+  }
+
+  // method to check if intsnace exists
+  public static hasINtsance(): boolean {
+    return Game_UI.instance !== null;
+  }
+
+  // method to destroy instance (for testing)
+  public static destroyInstance(): void {
+    if (Game_UI.instance) {
+      Game_UI.instance.screen.destroy();
+      Game_UI.instance = null;
+    }
   }
 
   /*=======================================================*
-   |             INITIALIZE WIDGETS IN THE GRID            |
+   |             INITIALIZE WIDGETS             
    *=======================================================*/
 
   // ****************** ~ GAME INTERFACE ~ *****************
@@ -107,6 +154,9 @@ class Game_UI {
     this.screen.append(this.logArea);
     this.screen.append(this.inputArea);
     this.gameArea.append(this.textArea);
+
+    const screenWitdh = this.screen.width;
+    const screenHeight = this.screen.height;
   }
 
   // ******************** ~ COMBAT SCREEN ~ *****************
@@ -297,29 +347,24 @@ class Game_UI {
    |                    LAYOUTS
    *=======================================================*/
 
-  async setLayout(layoutName: keyof typeof this.layoutConfigs): Promise<void> {
+  async setLayout(layoutName: Lowercase<GamePhase>): Promise<void> {
     this.clear_game_area();
     const config = this.layoutConfigs[layoutName];
 
     switch (layoutName) {
       case "boot":
-        //@ts-expect-error
         await this.setupBootLayout(config);
         break;
-      case "characterCreation":
-        //@ts-expect-error
+      case "character_creation":
         await this.setupCharacterCreationLayout(config);
         break;
-      case "worldMap":
-        //@ts-expect-error
+      case "world_map":
         await this.setupWorldMapLayout(config);
         break;
       case "combat":
-        //@ts-expect-error
         await this.setupCombatLayout(config);
         break;
       default:
-        //@ts-expect-error
         await this.setupBootLayout(config);
     }
 
@@ -327,20 +372,7 @@ class Game_UI {
     this.screen.render();
   }
 
-  private async setupBootLayout(config: {
-    lcd: {
-      top: string;
-      left: string;
-      width: string;
-      height: number;
-    };
-    textArea: {
-      visible: boolean;
-    };
-    actionBar: {
-      visible: boolean;
-    };
-  }) {
+  private async setupBootLayout(config: UIConfig) {
     this.lcd.position = {
       ...config.lcd,
     };
@@ -349,81 +381,24 @@ class Game_UI {
     this.textArea.hide();
   }
 
-  private async setupCharacterCreationLayout(config: {
-    lcd: {
-      top: string;
-      left: string;
-      width: string;
-      height: number;
-    };
-    textArea: {
-      visible: boolean;
-    };
-    actionBar: {
-      visible: boolean;
-    };
-  }) {
+  private async setupCharacterCreationLayout(config: UIConfig) {
     this.lcd.position = {
       ...config.lcd,
     };
     this.textArea.show();
   }
 
-  private async setupWorldMapLayout(config: {
-    lcd: {
-      top: string;
-      left: string;
-      width: string;
-      height: number;
-    };
-    textArea: {
-      visible: boolean;
-    };
-    actionBar: {
-      visible: boolean;
-    };
-  }) {
+  private async setupWorldMapLayout(config: UIConfig) {
     this.lcd.position = {
       ...config.lcd,
     };
   }
 
-
-  async setupCombatLayout(): Promise<void> {
-    // Clear any existing combat elements
-    this.clearCombatElements();
-    this.clear_game_area();
-
-    // Health bars at top - using manual positioning
-    this.healthGauge = blessed.box({
-      ...healthGauge,
-      content: this.createHealthBar("HERO", 100, "green"),
-    });
-    this.enemyHealthGauge = blessed.box({
-      ...enemyHealthGauge,
-      content: this.createHealthBar("ENEMY", 100, "red"),
-    });
-
-    // Character info panels
-    this.heroPanel = blessed.box(heroPanel);
-    this.enemyPanel = blessed.box(enemyPanel);
-
-    // Combat arena (middle)
-    const combatArena = blessed.box({
-      ...Arena,
-      content: this.renderCombatArena(),
-    });
-
-    // Combat log below arena
-    this.combatLog = blessed.log(combatLog);
-
-    // Append all combat elements
-    this.gameArea.append(this.healthGauge);
-    this.gameArea.append(this.enemyHealthGauge);
-    this.gameArea.append(this.heroPanel);
-    this.gameArea.append(this.enemyPanel);
-    this.gameArea.append(combatArena);
-    this.gameArea.append(this.combatLog);
+  async setupCombatLayout(config: UIConfig): Promise<void> {
+    this.lcd.hide();
+    this.textArea.position = {
+      ...config.textArea,
+    };
   }
 
   private createHealthBar(

@@ -18,12 +18,20 @@ const initialGameState: GameState = {
 
 // Game Store class
 class GameStore {
+  private static instance: GameStore | null = null; 
   private state: GameState;
   private listeners: Array<(state: GameState) => void> = [];
 
   constructor(initialState: GameState = initialGameState) {
     this.state = { ...initialState, };
+  }
 
+  public static getInstance(initialState: GameState = initialGameState) {
+    if (!GameStore.instance) {
+      GameStore.instance = new GameStore(initialState);
+    }
+
+    return this.instance;
   }
 
   // Get current state

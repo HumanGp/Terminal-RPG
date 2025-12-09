@@ -252,7 +252,13 @@ export const ASCII = {
 
 export const layoutConfigs = {
   boot: {
-    lcd: { top: "center", left: "center", width: "90%", height: 6 , visible: true},
+    lcd: {
+      top: "center",
+      left: "center",
+      width: "90%",
+      height: 6,
+      visible: true
+    },
     textArea: { visible: false },
     actionBar: { visible: true },
     logArea: { visible: true },
@@ -283,16 +289,24 @@ export const layoutConfigs = {
     logArea: { visible: true },
   },
   combat: {
-    lcd: { top: 1, left: "center", width: "90%", height: 3, visible: false },
     textArea: {
-      top: "70%",
+      top: 1,
+      left: "center",
+      width: 42,
+      height: 22,
+      border: {type: "line", fg: "blue"}
+    },
+    actionBar: {
+      top: 24,
       left: 0,
       width: "100%",
-      height: "30%",
-      visible: true,
+      height: 3,
     },
-    actionBar: { visible: true },
-    logArea: { visible: true },
-    combatElements: { visible: true },
+    logArea: {
+      top: 28,
+      left: 0,
+      width: "100%",
+      height: "10%"
+    }
   },
 };

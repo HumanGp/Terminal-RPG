@@ -3,6 +3,7 @@
  *=======================================================*/
 
 abstract class Character {
+  private static instance: Character | null = null;
   public name: string;
   public level: number;
   public health!: number;
@@ -11,7 +12,7 @@ abstract class Character {
   public defense!: number;
   public speed!: number;
   public gold: number;
-  public experience: number;
+  public experience: `${number}xp`;
 
   // Status effects
   public statusEffects: StatusEffect[] = [];
@@ -21,7 +22,7 @@ abstract class Character {
     this.name = name;
     this.level = level;
     this.gold = 0;
-    this.experience = 0;
+    this.experience = '0xp';
   }
 
   abstract attackTarget(target: Character): AttackResult;
@@ -52,6 +53,8 @@ abstract class Character {
     return this.level * 10;
   }
 }
+
+
 
 interface StatusEffect {
   type: "POISON" | "BURN" | "STUN" | "BLEED" | "BUFF_ATTACK" | "BUFF_DEFENSE";

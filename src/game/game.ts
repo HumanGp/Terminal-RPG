@@ -13,15 +13,18 @@ import { Game_UI } from "../display/GameUI";
 import { PhaseHandlerFactory } from "../state/phaseHandlers/GamePhaseHandler";
 import { GameStore } from "../state/GameState";
 import { layoutConfigs } from "../components/UI/ui";
+import { Combat } from "./combat";
 
 class GAME {
   private gameStore: GameStore;
   private ui: Game_UI;
+  private combat: Combat;
   private isRunning: boolean = false;
-
+ 
   constructor() {
-    this.gameStore = new GameStore();
-    this.ui = new Game_UI(layoutConfigs);
+    this.gameStore = GameStore.getInstance()!;
+    this.ui = Game_UI.getInstance(layoutConfigs);
+    this.combat = Combat.getInstance();
   }
 
   async start() {
@@ -73,7 +76,8 @@ class GAME {
       const handler = PhaseHandlerFactory.createHandler(
         state.currentPhase,
         this.gameStore,
-        this.ui
+        this.ui,
+        this.combat,
       );
 
       await handler.execute();

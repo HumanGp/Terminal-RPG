@@ -8,9 +8,9 @@ import { GamePhaseHandler } from "./GamePhaseHandler_base";
 export class CombatPhaseHandler extends GamePhaseHandler {
   private combat: Combat;
 
-  constructor(gameStore: GameStore, ui: Game_UI, combat: Combat) {
+  constructor(gameStore:GameStore, ui:Game_UI, combat: Combat) {
     super(gameStore, ui);
-    this.combat = combat;
+    this.combat = combat; 
   }
 
   protected async onEnter(): Promise<void> {

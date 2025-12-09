@@ -23,7 +23,7 @@ interface UI_ {
     
 }
 
-type GamePhase =
+export type GamePhase =
   | "BOOT"
   | "CHARACTER_CREATION"
   | "WORLD_MAP"
@@ -130,7 +130,6 @@ export interface LayoutConfig {
 export type {
   UI_,
   ASCII_Characters,
-  GamePhase,
   ScreenData,
   ARTS
 };

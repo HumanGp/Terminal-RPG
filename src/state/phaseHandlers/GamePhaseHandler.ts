@@ -1,5 +1,5 @@
 import { Game_UI } from "../../display/GameUI";
-import { combat } from "../../game/combat";
+import { Combat } from "../../game/combat";
 import { GameStore } from "../GameState";
 import { BootPhaseHandler } from "./BootHandler";
 import { CharacterCreationPhaseHandler } from "./CharacterCreationPhaseHandler";
@@ -10,7 +10,7 @@ import { WorldMapPhaseHandler } from "./WorldMapPhaseHanlder";
 
 // Phase Handler Factory
 class PhaseHandlerFactory {
-  static createHandler(phase: string, gameStore: GameStore, ui: Game_UI ): GamePhaseHandler {
+  static createHandler(phase: string, gameStore: GameStore, ui: Game_UI, combat?: Combat ): GamePhaseHandler {
     switch (phase) {
       case "BOOT":
         return new BootPhaseHandler(gameStore, ui);
@@ -19,7 +19,7 @@ class PhaseHandlerFactory {
       case "WORLD_MAP":
         return new WorldMapPhaseHandler(gameStore, ui);
       case "COMBAT":
-        return new CombatPhaseHandler(gameStore, ui, combat);
+        return new CombatPhaseHandler(gameStore, ui, combat!);
       case "GAME_OVER":
         return new GameOverPhaseHandler(gameStore, ui);
       default:
