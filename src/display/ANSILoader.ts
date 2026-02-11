@@ -4,14 +4,12 @@
  */
 
 export class ANSILoader {
-  private config;
-  private art;
 
-  constructor(art: string[], config: { [i: string]: string }) {
-    this.art = art;
-    this.config = config;
-  }
-
+  constructor(
+    private art: string[],
+    private config: { [i: string]: string }
+  ) { }
+    
   private parseCharacterArt(): string[] {
     return this.art.map((line) => this.colorizeLine(line));
   }

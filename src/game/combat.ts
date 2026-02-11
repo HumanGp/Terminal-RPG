@@ -56,7 +56,6 @@ export class Combat {
     return Combat.instance;
   }
 
-
   private setupInputHandling(): void {
     // Continuous key press handling for smooth movement
     this.ui.screen.on("keypress", (ch: string, key: any) => {
@@ -89,7 +88,7 @@ export class Combat {
     this.isRunning = true;
 
     // Set up combat layout
-    await this.ui.setLayout('combat');
+    await this.ui.setLayout("combat");
     await this.ui.add_log(
       "Combat started! Use ARROWS to move, SPACE to jump, Z to attack!",
       0
@@ -534,7 +533,7 @@ class EnemyAI {
     if (x < 0 || x >= world.width || y < 0 || y >= world.height) {
       return false;
     }
-    //@ts-expect-error
+//@ts-expect-error
     return !world.tiles[Math.floor(y)][Math.floor(x)].solid;
   }
 }
@@ -595,6 +594,7 @@ class WorldGenerator {
         solid: true,
         type: "ground",
       };
+
       //@ts-expect-error
       tiles[height - 2][x] = {
         symbol: "▒",

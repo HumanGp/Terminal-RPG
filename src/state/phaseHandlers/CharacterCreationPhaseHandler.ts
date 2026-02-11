@@ -1,4 +1,6 @@
-// ******** Character Phase  Handler ********
+/*=======================================================*
+ |                 CHARACTER CREATION                    |
+ *=======================================================*/
 
 import { Mage, Rogue, Warrior } from "../../components/characters/Characters";
 import { ScreenGenerator } from "../../display/ScreenGenerator";
@@ -12,12 +14,12 @@ export class CharacterCreationPhaseHandler extends GamePhaseHandler {
 
   protected async render(): Promise<void> {
     const screenData = ScreenGenerator.generateScreen("CHARACTER_CREATION");
+    
     this.ui.updateScreen(
       screenData.title,
       screenData.content.join("\n"),
       screenData.actions
     );
-    await this.ui.add_log(screenData.asciiArt, 0);
   }
 
   protected async handleInput(): Promise<void> {
@@ -66,7 +68,8 @@ export class CharacterCreationPhaseHandler extends GamePhaseHandler {
 
   protected async onExit(): Promise<void> {
     //update layout and phase
-    await this.ui.setLayout("worldMap");
+    
+    await this.ui.setLayout("world_map");
     this.gameStore.setPhase("WORLD_MAP");
   }
 }

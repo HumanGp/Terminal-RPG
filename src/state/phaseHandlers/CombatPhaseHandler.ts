@@ -1,5 +1,10 @@
-// ********* combat phase handler ********
+/*=======================================================*
+ |                     COMBAT                            |
+ *=======================================================*/
 
+//TODO: On Combat phase i need to update the log are instead of  type writing to append messages with auto scroll 
+//- new messages will get auto appended 
+//- lcd will be handy for combat phase change
 import { Game_UI } from "../../display/GameUI";
 import { Combat } from "../../game/combat";
 import { GameStore } from "../GameState";
@@ -8,9 +13,9 @@ import { GamePhaseHandler } from "./GamePhaseHandler_base";
 export class CombatPhaseHandler extends GamePhaseHandler {
   private combat: Combat;
 
-  constructor(gameStore:GameStore, ui:Game_UI, combat: Combat) {
+  constructor(gameStore: GameStore, ui: Game_UI, combat: Combat) {
     super(gameStore, ui);
-    this.combat = combat; 
+    this.combat = combat;
   }
 
   protected async onEnter(): Promise<void> {
@@ -20,7 +25,7 @@ export class CombatPhaseHandler extends GamePhaseHandler {
 
   protected async render(): Promise<void> {
     const state = this.getState();
-    
+
     this.combat.start();
 
     await this.ui.add_log("Working on the combat", 0);

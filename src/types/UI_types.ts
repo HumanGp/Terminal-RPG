@@ -127,6 +127,32 @@ export interface LayoutConfig {
   };
 }
 
+export interface Layout {
+  lcd?: {};
+  textArea: {
+    top?: number;
+    left?: number | string;
+    width?: string | number;
+    height?: string | number;
+    visible?: boolean;
+    border?: {
+      type: string;
+      fg: string
+    }
+  };
+  actionBar: {};
+  logArea: {};
+}
+
+
+export interface UIConfig {
+  boot: Layout
+  combat: Layout;
+  world_map: Layout;
+  character_creation: Layout;
+}
+
+
 export type {
   UI_,
   ASCII_Characters,

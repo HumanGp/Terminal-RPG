@@ -1,3 +1,7 @@
+/*=======================================================*
+ |                      WORLD MAP                        |
+ *=======================================================*/
+
 import { ScreenGenerator } from "../../display/ScreenGenerator";
 import { GamePhaseHandler } from "./GamePhaseHandler_base";
 
@@ -10,6 +14,7 @@ export class WorldMapPhaseHandler extends GamePhaseHandler {
   protected async render(): Promise<void> {
     const state = this.getState();
     const screenData = ScreenGenerator.generateScreen("WORLD_MAP", state.hero);
+    
     this.ui.updateScreen(
       screenData.title,
       screenData.content.join("\n"),

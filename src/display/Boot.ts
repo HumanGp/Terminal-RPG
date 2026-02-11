@@ -1,5 +1,8 @@
-import { Game_UI } from "./GameUI";
+/*=======================================================*
+ |                   LCD BOOT SEQUENCE                   |
+ *=======================================================*/
 
+import { Game_UI } from "./GameUI";
 
 class LCDBootHandler {
   private ui: Game_UI;
@@ -9,39 +12,40 @@ class LCDBootHandler {
   }
 
   async executeBootSequence(): Promise<void> {
-    // Hide standard UI elements during boot
-    this.hideStandardUI();
+    /**
+     * starndard UI is initially hidden
+     * maximize the gameArea for a full-screen boot animation
+     */
+    this.ui.hideStandardUI();
 
     try {
       await this.phase1_PowerOn();
       await this.phase2_Ready();
     } finally {
-      // Always show standard UI after boot
-      this.showStandardUI();
+      /**
+       * after boot:
+       * - minimize gameArea 
+       * - append standard UI elements to the screen
+       * - remove LCD from the screen
+       * - show textArea
+       */
+      this.ui.showStandardUI();
     }
   }
 
   private async phase1_PowerOn(): Promise<void> {
-    // this.ui.set_lcd_label("POWER ON ");
-
-    const sequences = [
-      "POWERED BY HUMANGPT"
-    ];
+    const sequences = ["POWERED BY HUMANGPT"];
 
     await this.ui.scroll_lcd_message(sequences, 250);
     await this.delay(500);
   }
 
-
-
   private async phase2_Ready(): Promise<void> {
-    // this.ui.set_lcd_label("READY");
     await this.ui.show_lcd_loading(3000);
 
     const readyMessages = [
       "SYSTEM READY!",
       "TERMINAL RPG",
-      "INSERT COIN...",
       "PRESS START...",
     ];
 
@@ -58,17 +62,6 @@ class LCDBootHandler {
     // Final display
     this.ui.set_lcd_display("READY!".padEnd(16, " "), "green");
     await this.delay(1000);
-  }
-
-  private hideStandardUI(): void {
-    // You'll need to add hide/show methods to your Game_UI
-    // this.ui.hideGameArea();
-    // this.ui.hideLogArea();
-  }
-
-  private showStandardUI(): void {
-    // this.ui.showGameArea();
-    // this.ui.showLogArea();
   }
 
   private delay(ms: number): Promise<void> {

@@ -9,30 +9,9 @@
 ..:::::..:::.......:::..:::::..::..:::::..::..::::..:::......::::..::::::::::::..:::::
  */
 
-
-interface UIConfig {
-  lcd: {
-    top: string;
-    left: string;
-    width: string;
-    height: number;
-  };  
-  textArea: { visible?: boolean };
-  actionBar: { visible?: boolean };
-  logArea: { visible?: boolean };
-}
-
-interface BootUIConfig extends UIConfig {};
-
-interface CCUIConfig extends UIConfig { }; // Character Creation Config
-
-interface WMUIConfig extends UIConfig { };
-
-interface CombatUIConfig extends UIConfig { };
-
-import { Widgets } from "blessed";
+import { layout, Widgets } from "blessed";
 import type { Character_Enemy, Character_Hero } from "../types/characters_types";
-import type { ASCII_Characters, GamePhase, LayoutConfig } from "../types/UI_types";
+import type { ASCII_Characters, GamePhase, Layout, LayoutConfig, UIConfig } from "../types/UI_types";
 import {
   actionBar,
   Arena,
@@ -65,7 +44,7 @@ class Game_UI {
   private phaseTitle!: Widgets.Log;
   private inputArea!: Widgets.TextboxElement;
   private actionBar!: Widgets.BoxElement;
-  private layoutConfigs!: UIConfig[];
+  private layoutConfigs!: UIConfig;
   private currentLayout!: Lowercase<GamePhase>;
   private lcd: any;
   private heroPanel!: Widgets.BoxElement;
@@ -76,7 +55,7 @@ class Game_UI {
   static ASCII: ASCII_Characters = ASCII;
 
   // Private constructor to prevent direct construction
-  private constructor(layoutConfigs: UIConfig[]) {
+  private constructor(layoutConfigs: UIConfig) {
     this.layoutConfigs = layoutConfigs; // initialize with layout configs
     this.currentLayout = "boot"; // default layout | fallback layout
     this.initialize_standard_widgets();
@@ -85,7 +64,7 @@ class Game_UI {
   }
 
   // static methods to get the singleton instance
-  public static getInstance(layoutConfigs?: UIConfig[]): Game_UI {
+  public static getInstance(layoutConfigs?: UIConfig): Game_UI {
     if (!Game_UI.instance) {
       if (!layoutConfigs) {
         throw new Error(
@@ -110,6 +89,29 @@ class Game_UI {
     }
   }
 
+  hideStandardUI() {
+    //@ts-expect-error
+    this.gameArea.position = { ...this.gameArea, height: '100%' };
+  }
+
+  showStandardUI() {
+    // - minimize gameArea
+    //@ts-expect-error
+    this.gameArea.position = { ...this.gameArea, height: "90%" };
+
+    /// append standard UI elements
+    this.gameArea.append(this.actionBar);
+    this.gameArea.append(this.logArea);
+    this.screen.append(this.inputArea);
+    this.gameArea.append(this.textArea);
+
+    // hide LCD from screen
+    this.lcd.hide();
+
+    //show textArea
+    this.textArea.show();
+  }
+
   /*=======================================================*
    |             INITIALIZE WIDGETS             
    *=======================================================*/
@@ -125,7 +127,7 @@ class Game_UI {
     //quit screen
     this.screen.key(
       ["escape", "q", "C-c"],
-      function (ch: unknown, key: unknown) {
+      function(ch: unknown, key: unknown) {
         return process.exit(0);
       }
     );
@@ -150,10 +152,7 @@ class Game_UI {
 
     this.screen.append(this.phaseTitle);
     this.screen.append(this.gameArea);
-    this.screen.append(this.actionBar);
-    this.screen.append(this.logArea);
-    this.screen.append(this.inputArea);
-    this.gameArea.append(this.textArea);
+
 
     const screenWitdh = this.screen.width;
     const screenHeight = this.screen.height;
@@ -282,18 +281,18 @@ class Game_UI {
     //Update hero panel
     this.heroPanel.setContent(
       `{bold}Name:{/bold} ${hero.name}\n` +
-        `{bold}Level:{/bold} ${hero.level}\n` +
-        `{bold}Health:{/bold} ${hero.health}%\n` +
-        `{bold}Attack:{/bold} ${hero.attack}\n` +
-        `{bold}Defense:{/bold} ${hero.defense}`
+      `{bold}Level:{/bold} ${hero.level}\n` +
+      `{bold}Health:{/bold} ${hero.health}%\n` +
+      `{bold}Attack:{/bold} ${hero.attack}\n` +
+      `{bold}Defense:{/bold} ${hero.defense}`
     );
 
     //Update enemy panel
     this.enemyPanel.setContent(
       `{bold}Name:{/bold} ${enemy.name}\n` +
-        `{bold}Health:{/bold} ${enemy.health}%\n` +
-        `{bold}Attack:{/bold} ${enemy.attack}\n` +
-        `{bold}Defense:{/bold} ${enemy.defense}`
+      `{bold}Health:{/bold} ${enemy.health}%\n` +
+      `{bold}Attack:{/bold} ${enemy.attack}\n` +
+      `{bold}Defense:{/bold} ${enemy.defense}`
     );
 
     //Update health gauges
@@ -347,7 +346,7 @@ class Game_UI {
    |                    LAYOUTS
    *=======================================================*/
 
-  async setLayout(layoutName: Lowercase<GamePhase>): Promise<void> {
+  async setLayout(layoutName: keyof UIConfig): Promise<void> {
     this.clear_game_area();
     const config = this.layoutConfigs[layoutName];
 
@@ -372,7 +371,7 @@ class Game_UI {
     this.screen.render();
   }
 
-  private async setupBootLayout(config: UIConfig) {
+  private async setupBootLayout(config: Layout) {
     this.lcd.position = {
       ...config.lcd,
     };
@@ -381,21 +380,17 @@ class Game_UI {
     this.textArea.hide();
   }
 
-  private async setupCharacterCreationLayout(config: UIConfig) {
-    this.lcd.position = {
-      ...config.lcd,
-    };
-    this.textArea.show();
+  private async setupCharacterCreationLayout(config: Layout) {
+    //TODO: create a character creation layout
   }
 
-  private async setupWorldMapLayout(config: UIConfig) {
-    this.lcd.position = {
-      ...config.lcd,
-    };
+  private async setupWorldMapLayout(config: Layout) {
+    //TODO: create world map layout
   }
 
-  async setupCombatLayout(config: UIConfig): Promise<void> {
-    this.lcd.hide();
+  async setupCombatLayout(config: Layout): Promise<void> {
+    //TODO: Refactor combat logic
+    //@ts-expect-error
     this.textArea.position = {
       ...config.textArea,
     };
@@ -507,6 +502,7 @@ Enemy: ${this.get_health_bar(enemy.health)} ${enemy.health}%
       this.screen.render();
       await this.delay(speed);
     }
+
     this.logArea.add(""); // Finalize with newline
   }
 
@@ -573,21 +569,17 @@ Enemy: ${this.get_health_bar(enemy.health)} ${enemy.health}%
 
   private formatScreenContent(title: string, content: string): string {
     const Ascii_Title = `
-{#daa520-fg}${
-      Game_UI.ASCII.box_drawing_characters["tl"]
-    }${Game_UI.ASCII.box_drawing_characters["edge_x"].repeat(
-      title.length + 2
-    )}${Game_UI.ASCII.box_drawing_characters["tr"]}{/#daa520-fg}
-{#daa520-fg}${
-      Game_UI.ASCII.box_drawing_characters["edge_y"]
-    } {bold}${title}{/bold} ${
-      Game_UI.ASCII.box_drawing_characters["edge_y"]
-    }{/#daa520-fg}
-{#daa520-fg}${
-      Game_UI.ASCII.box_drawing_characters["bl"]
-    }${Game_UI.ASCII.box_drawing_characters["edge_x"].repeat(
-      title.length + 2
-    )}${Game_UI.ASCII.box_drawing_characters["br"]}{/#daa520-fg}
+{#daa520-fg}${Game_UI.ASCII.box_drawing_characters["tl"]
+      }${Game_UI.ASCII.box_drawing_characters["edge_x"].repeat(
+        title.length + 2
+      )}${Game_UI.ASCII.box_drawing_characters["tr"]}{/#daa520-fg}
+{#daa520-fg}${Game_UI.ASCII.box_drawing_characters["edge_y"]
+      } {bold}${title}{/bold} ${Game_UI.ASCII.box_drawing_characters["edge_y"]
+      }{/#daa520-fg}
+{#daa520-fg}${Game_UI.ASCII.box_drawing_characters["bl"]
+      }${Game_UI.ASCII.box_drawing_characters["edge_x"].repeat(
+        title.length + 2
+      )}${Game_UI.ASCII.box_drawing_characters["br"]}{/#daa520-fg}
     `;
     return `${Ascii_Title}\n\n${content}`;
   }
@@ -643,7 +635,7 @@ Enemy: ${this.get_health_bar(enemy.health)} ${enemy.health}%
     this.textArea.show();
     this.actionBar.show();
     this.logArea.show();
-    this.lcd.hide();
+
   }
 }
 

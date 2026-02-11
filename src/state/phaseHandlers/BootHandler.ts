@@ -1,4 +1,6 @@
-// ************** Boot Phase Handler ***************
+/*=======================================================*
+ |                        BOOT                           |
+ *=======================================================*/
 
 import { LCDBootHandler } from "../../display/Boot";
 import { Game_UI } from "../../display/GameUI";
@@ -15,22 +17,31 @@ export class BootPhaseHandler extends GamePhaseHandler {
   }
 
   protected async onEnter(): Promise<void> {
-    // Set boot layout
     await this.ui.setLayout("boot");
-    // LCD for boot sequence
     await this.lcdBoot.executeBootSequence();
 
+    
     //Transition message
     await this.ui.add_log(
       "Boot sequence complete. Ready for character creation...",
-      30
+      60
     );
   }
 
   protected async render(): Promise<void> {
-    // Minimal rendering since LCD handles the visual boot
     const screenData = ScreenGenerator.generateScreen("BOOT");
-    this.ui.update_actions(screenData.actions);
+
+    /**
+     * After boot animation
+     * - display game intro (base story)
+     * - update actions
+     * - update phase title
+     */
+    this.ui.updateScreen(
+      screenData.title,
+      screenData.content.join("\n"),
+      screenData.actions
+    )
   }
 
   protected async handleInput(): Promise<void> {
@@ -39,11 +50,9 @@ export class BootPhaseHandler extends GamePhaseHandler {
   }
 
   protected async onExit(): Promise<void> {
-    //clear LCD for next phase
-    this.ui.clear_lcd();
-    //this.ui.set_lcd_label('STANDBY')
     // set layout  (next phase)
-    await this.ui.setLayout("characterCreation");
+   
+    await this.ui.setLayout("character_creation");
     this.gameStore.setPhase("CHARACTER_CREATION");
   }
 

@@ -84,7 +84,7 @@ class ScreenGenerator {
         " • Energy-based skills",
         " • High risk, high reward",
       ],
-      actions: ["[W] Warrior", "[M] Mage", "[R] Rogue"],
+      actions: ["[W]", "[M]", "[R]"],
       asciiArt: `character generation art`,
     };
   }

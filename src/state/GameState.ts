@@ -6,11 +6,10 @@ import { ARTS, GamePhase } from "../types/UI_types";
 const initialGameState: GameState = {
   currentPhase: "BOOT",
   hero: null,
-  // enemy: null,
   currentArea: "FOREST_AREA",
   combatHistory: [],
   gameStats: {
-    enemiesDefeated: 0,
+    enemiesDefeated: 0,  
     goldCollected: 0,
     areasExplored: 0,
   },

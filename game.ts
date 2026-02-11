@@ -9,20 +9,21 @@
 ..:::::..:::.......:::..:::::..::..:::::..::..::::..:::......::::..::::::::::::..:::::
  */
 
-import { Game_UI } from "../display/GameUI";
-import { PhaseHandlerFactory } from "../state/phaseHandlers/GamePhaseHandler";
-import { GameStore } from "../state/GameState";
-import { layoutConfigs } from "../components/UI/ui";
-import { Combat } from "./combat";
+import { Game_UI } from "./src/display/GameUI";
+import { PhaseHandlerFactory } from "./src/state/phaseHandlers/GamePhaseHandler";
+import { GameStore } from "./src/state/GameState";
+import { layoutConfigs } from "./src/components/UI/ui";
+import { Combat } from "./src/game/combat";
 
 class GAME {
   private gameStore: GameStore;
   private ui: Game_UI;
   private combat: Combat;
   private isRunning: boolean = false;
- 
+
   constructor() {
     this.gameStore = GameStore.getInstance()!;
+
     this.ui = Game_UI.getInstance(layoutConfigs);
     this.combat = Combat.getInstance();
   }
@@ -77,7 +78,7 @@ class GAME {
         state.currentPhase,
         this.gameStore,
         this.ui,
-        this.combat,
+        this.combat
       );
 
       await handler.execute();
@@ -103,7 +104,6 @@ class GAME {
     await this.ui.add_log(`State changed: ${state.currentPhase}`, 0);
   }
 }
-
 
 const game = new GAME();
 

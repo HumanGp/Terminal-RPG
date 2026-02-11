@@ -3,6 +3,7 @@
  *=======================================================*/
 
 import { Game_UI } from "../../display/GameUI";
+import { UIConfig } from "../../types/UI_types";
 
  // *********** ~ main screen components ~ **************
 
@@ -35,7 +36,7 @@ export const gameArea = {
   top: 1, //Below title
   left: 0,
   width: "100%",
-  height: "70%",
+  height: "85%",
   content: "Welcome to your adventure...",
   tags: true,
   styles: {
@@ -58,9 +59,9 @@ export const gameArea = {
 
 
 export const actionBar = {
-  top: "70%+1",
-  left: 0,
-  width: "100%",
+  bottom: 0,
+  right: 0,
+  width: "30%",
   height: 3,
   content: "booting...",
   style: {
@@ -72,32 +73,33 @@ export const actionBar = {
     fg: "#d4af37",
   },
   padding: { left: 2 },
-  label: "Commands",
+  label: "{ Commands }",
 };
 
 export const logArea = {
-  top: "70%+4", // Below action bar
-  left: 0,
-  width: "100%",
-  height: "20%", // Reasonable height for messages
+  top: 0, // Below action bar
+  right: 0,
+  width: "30%",
+  height: "30%", // Reasonable height for messages
   style: {
     fg: "#a08c76",
-    bg: "#2a1f1d",
+    // bg: "#2a1f1d",
   },
-  border: {
-    type: "line",
-    fg: "#8b4513",
-  },
+  // border: {
+  //   type: "line",
+  //   fg: "#8b4513",
+  // },
   scrollback: 100,
   scrollbar: {
     ch: "░",
     style: { fg: "#d4af37" },
   },
-  label: "Logs",
+  label: "{ Logs }",
+  padding: { left: 2, right: 2, top: 1, bottom: 1 },
 };
 
 export const inputArea = {
-  bottom: 0,
+  top: "86%+3",
   left: 0,
   width: "100%",
   height: 3,
@@ -135,9 +137,9 @@ export const lcd = {
 };
 
 export const textArea = {
-  top: "20%",
+  top: 0,
   left: 0,
-  width: "90%",
+  width: "65%",
   height: "100%",
   content: "",
   tags: true,
@@ -250,7 +252,7 @@ export const ASCII = {
  |                   LAYOUTS                             |
  *=======================================================*/
 
-export const layoutConfigs = {
+export const layoutConfigs: UIConfig = {
   boot: {
     lcd: {
       top: "center",
@@ -262,9 +264,10 @@ export const layoutConfigs = {
     textArea: { visible: false },
     actionBar: { visible: true },
     logArea: { visible: true },
+    
   },
 
-  characterCreation: {
+  character_creation: {
     lcd: { top: 1, left: "center", width: "90%", height: 4 },
     textArea: {
       top: 6,
@@ -276,7 +279,7 @@ export const layoutConfigs = {
     actionBar: { visible: false },
     logArea: { visible: true },
   },
-  worldMap: {
+  world_map: {
     lcd: { top: 1, left: "center", width: "90%", height: 4 },
     textArea: {
       top: 6,
