@@ -140,6 +140,8 @@ class Game_UI {
     // });
   }
 
+  
+
   private initialize_standard_widgets(): void {
     this.screen = blessed.screen(screen);
     this.lcd = contrib.lcd(lcd);
